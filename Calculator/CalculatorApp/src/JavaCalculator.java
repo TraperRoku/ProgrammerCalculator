@@ -53,14 +53,16 @@ public class JavaCalculator {
     private JButton eButton;
     private JButton fButton;
     private JTextField displayResult;
-    private JList list1;
-    private JList list2;
     private JButton fieldPlus;
     private JButton fieldMinus;
     private JButton fieldMultiplication;
     private JButton fieldDivide;
     private JButton fieldPlusOrMinus;
     private JButton fieldMPlus;
+    private JRadioButton hexRadioButton;
+    private JRadioButton decRadioButton;
+    private JRadioButton octRadioButton;
+    private JRadioButton binRadioButton;
 
     public JavaCalculator() {
 
@@ -124,6 +126,16 @@ public class JavaCalculator {
             }
         });
 
+        ActionListener listener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        };
+        octRadioButton.addActionListener(listener);
+        binRadioButton.addActionListener(listener);
+        hexRadioButton.addActionListener(listener);
+        decRadioButton.addActionListener(listener);
     }
 
     private void appendNumber(String number) {
