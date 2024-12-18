@@ -12,8 +12,11 @@ public class JavaCalculator {
 
     private double total1 = 0.0;
     private String operator = "";
+    private boolean isNewLine = false;
     private boolean isOperatorPressed = false;
-    private final String PLACEHOLDER = "0";
+    private  String placeHolder = "0";
+    private String lastOperator = "";
+    private double lastNumber = 0.0;
 
 
     private JPanel JavaCalculator;
@@ -78,7 +81,7 @@ public class JavaCalculator {
 
         decRadioButton.setSelected(true);
         qwordRadioButton.setSelected(true);
-        displayResult.setText(PLACEHOLDER);
+        displayResult.setText(placeHolder);
         displayResult.setForeground(java.awt.Color.GRAY);
 
         a0Button.addActionListener(e -> appendNumber("0"));
@@ -96,9 +99,14 @@ public class JavaCalculator {
         rówwnaSieButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty()) {
                     double currentValue = Double.parseDouble(displayResult.getText());
                     double result = 0;
+                    if (!lastOperator.isEmpty() && operator.isEmpty()) {
+                        operator = lastOperator;
+                        currentValue = lastNumber;
+                    }
+
                     switch (operator) {
                         case "+":
                             result = calculator.add(total1, currentValue);
@@ -120,7 +128,11 @@ public class JavaCalculator {
                     }
                     displayResult.setText(Double.toString(result));
                     displayResult.setForeground(java.awt.Color.BLACK);
+                    lastOperator = operator;
                     operator = "";
+                    lastNumber = currentValue;
+                    total1 = result;
+                    isNewLine = true;
                     isOperatorPressed = false;
                 }
             }
@@ -141,8 +153,9 @@ public class JavaCalculator {
                         displayResult.setText(Double.toString(total1));
 
                     }
-
+                    lastNumber = currentValue;
                     isOperatorPressed = true;
+                    lastOperator = "+";
 
                     }
                 }
@@ -159,25 +172,71 @@ public class JavaCalculator {
         binRadioButton.addActionListener(listener);
         hexRadioButton.addActionListener(listener);
         decRadioButton.addActionListener(listener);
+
+        //usuniecie calkowite
+        cButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                total1 =0;
+                displayPlaceholder();
+                lastOperator = "";
+            }
+        });
+
+        //usuniecie danej czynnosci czyli 5 + 4 (CE) -> 5 + ...
+        CEButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displayPlaceholder();
+            }
+        });
+        fieldMinus.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    double currentValue = Double.parseDouble(displayResult.getText());
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "-";
+
+                        } else {
+                            total1 = calculator.subtract(total1, currentValue);
+                            displayResult.setText(Double.toString(total1));
+
+                        }
+                        lastNumber = total1;
+                        isOperatorPressed = true;
+                        lastOperator = "-";
+
+                    }
+
+                }
+
+
+            }
+        });
     }
 
     private void appendNumber(String number) {
-        if (isPlaceholderActive() || isOperatorPressed) {
+        if (isPlaceholderActive() || isOperatorPressed|| isNewLine) {
             displayResult.setText(number);
             displayResult.setForeground(java.awt.Color.BLACK);
             isOperatorPressed = false;
+            isNewLine = false;
         } else {
             displayResult.setText(displayResult.getText() + number);
         }
+        lastNumber = Double.parseDouble(number);
     }
 
     private void displayPlaceholder() {
-        displayResult.setText(PLACEHOLDER);
+        displayResult.setText(placeHolder);
         displayResult.setForeground(java.awt.Color.GRAY);
     }
 
     private boolean isPlaceholderActive() {
-        return displayResult.getText().equals(PLACEHOLDER);
+        return displayResult.getText().equals(placeHolder);
     }
 
 
