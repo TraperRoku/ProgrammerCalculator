@@ -8,6 +8,39 @@ public class Calculator {
     }
 
 
+    public String calculateInBase(String num1, String num2, TypeNumber type, String operator) {
+        int decimalNum1 = Integer.parseInt(num1, getBaseValue(type));
+        int decimalNum2 = Integer.parseInt(num2, getBaseValue(type));
+        int result = 0;
+
+        switch (operator) {
+            case "+":
+                result = decimalNum1 + decimalNum2;
+                break;
+            case "-":
+                result = decimalNum1 - decimalNum2;
+                break;
+            case "*":
+                result = decimalNum1 * decimalNum2;
+                break;
+            case "/":
+                if (decimalNum2 == 0) throw new ArithmeticException("Nie można dzielić przez zero!");
+                result = decimalNum1 / decimalNum2;
+                break;
+        }
+
+        return convertNumber(Integer.toString(result), TypeNumber.Dec, type);
+    }
+
+    public int getBaseValue(Calculator.TypeNumber base) {
+        return switch (base) {
+            case Hex -> 16;
+            case Oct -> 8;
+            case Bin -> 2;
+            default -> 10;
+        };
+    }
+
     public enum TypeNumber{
     Hex,Dec,Oct,Bin
     }
@@ -46,19 +79,19 @@ public class Calculator {
         return null;
     }
 
-    public double add(double a, double b) {
+    public int add(int a, int b) {
         return a + b;
     }
 
-    public double subtract(double a, double b) {
+    public int subtract(int a, int b) {
         return a - b;
     }
 
-    public double multiply(double a, double b) {
+    public int multiply(int a, int b) {
         return a * b;
     }
 
-    public double divide(double a, double b) throws IllegalArgumentException {
+    public int divide(int a, int b) throws IllegalArgumentException {
         if (b == 0) {
             throw new IllegalArgumentException("Nie można dzielić przez zero!");
         }

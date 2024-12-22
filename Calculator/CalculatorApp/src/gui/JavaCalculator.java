@@ -3,6 +3,7 @@ package gui;
 import main.Calculator;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -10,17 +11,20 @@ public class JavaCalculator {
 
     Calculator calculator = new Calculator(0);
 
-    private double total1 = 0.0;
+    private int total1 = 0;
     private String operator = "";
     private boolean isNewLine = false;
     private boolean isOperatorPressed = false;
     private  String placeHolder = "0";
     private String lastOperator = "";
-    private double lastNumber = 0.0;
+    private int lastNumber = 0;
+
+    private Calculator.TypeNumber currentType = Calculator.TypeNumber.Dec;
 
 
     private JPanel JavaCalculator;
     private JTextField binaryResult;
+    private BinaryResultFormatter binaryFormatter;
     private JButton andButton;
     private JButton rshButton;
     private JButton xorButton;
@@ -77,12 +81,37 @@ public class JavaCalculator {
     private JRadioButton wordRadioButton;
     private JRadioButton bajtRadioButton;
 
+
+
     public JavaCalculator() {
+
+        binaryFormatter = new BinaryResultFormatter(binaryResult);
+
+        try {
+            int value = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
+            binaryFormatter.updateDisplay(value);
+        } catch (NumberFormatException ex) {
+            // Handle invalid number format
+            binaryResult.setText("0".repeat(32));
+        }
 
         decRadioButton.setSelected(true);
         qwordRadioButton.setSelected(true);
+
         displayResult.setText(placeHolder);
         displayResult.setForeground(java.awt.Color.GRAY);
+
+        displayResult.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        binaryResult.setLayout(new FlowLayout(FlowLayout.RIGHT));
+
+        displayResult.setHorizontalAlignment(JTextField.RIGHT);
+        binaryResult.setHorizontalAlignment(JTextField.RIGHT);
+
+        displayResult.setFont(new Font("Arial", Font.BOLD, 24));
+        displayResult.setPreferredSize(new Dimension(500, 40));
+
+
+
 
         a0Button.addActionListener(e -> appendNumber("0"));
         a1Button.addActionListener(e -> appendNumber("1"));
@@ -95,13 +124,19 @@ public class JavaCalculator {
         a8Button.addActionListener(e -> appendNumber("8"));
         a9Button.addActionListener(e -> appendNumber("9"));
 
+        hexRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Hex));
+        decRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Dec));
+        octRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Oct));
+        binRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Bin));
+
 
         rówwnaSieButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty()) {
-                    double currentValue = Double.parseDouble(displayResult.getText());
-                    double result = 0;
+                    int currentValue = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
+                    int result = 0;
+
                     if (!lastOperator.isEmpty() && operator.isEmpty()) {
                         operator = lastOperator;
                         currentValue = lastNumber;
@@ -126,8 +161,9 @@ public class JavaCalculator {
                             }
                             break;
                     }
-                    displayResult.setText(Double.toString(result));
+                    displayResult.setText(calculator.convertNumber(Integer.toString(result), Calculator.TypeNumber.Dec, currentType));
                     displayResult.setForeground(java.awt.Color.BLACK);
+                    binaryFormatter.updateDisplay(result);
                     lastOperator = operator;
                     operator = "";
                     lastNumber = currentValue;
@@ -142,7 +178,7 @@ public class JavaCalculator {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
-                    double currentValue = Double.parseDouble(displayResult.getText());
+                    int currentValue = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
                 if(!isOperatorPressed) {
                     if (operator.isEmpty()) {
                         total1 = currentValue;
@@ -151,6 +187,7 @@ public class JavaCalculator {
                     } else {
                         total1 = calculator.add(total1, currentValue);
                         displayResult.setText(Double.toString(total1));
+                        binaryFormatter.updateDisplay(total1);
 
                     }
                     lastNumber = currentValue;
@@ -194,7 +231,7 @@ public class JavaCalculator {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
-                    double currentValue = Double.parseDouble(displayResult.getText());
+                    int currentValue = Integer.parseInt(displayResult.getText());
                     if (!isOperatorPressed) {
                         if (operator.isEmpty()) {
                             total1 = currentValue;
@@ -203,6 +240,7 @@ public class JavaCalculator {
                         } else {
                             total1 = calculator.subtract(total1, currentValue);
                             displayResult.setText(Double.toString(total1));
+                            binaryFormatter.updateDisplay(total1);
 
                         }
                         lastNumber = total1;
@@ -216,6 +254,68 @@ public class JavaCalculator {
 
             }
         });
+        fieldMultiplication.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    int currentValue = Integer.parseInt(displayResult.getText());
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "*";
+
+                        } else {
+                            total1 = calculator.multiply(total1, currentValue);
+                            displayResult.setText(Double.toString(total1));
+                            binaryFormatter.updateDisplay(total1);
+
+                        }
+                        lastNumber = total1;
+                        isOperatorPressed = true;
+                        lastOperator = "*";
+
+                    }
+
+                }
+            }
+        });
+        fieldDivide.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    int currentValue = Integer.parseInt(displayResult.getText());
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "/";
+
+                        } else {
+                            total1 = calculator.divide(total1, currentValue);
+                            displayResult.setText(Double.toString(total1));
+                            binaryFormatter.updateDisplay(total1);
+
+                        }
+                        lastNumber = total1;
+                        isOperatorPressed = true;
+                        lastOperator = "/";
+
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void updateBase(Calculator.TypeNumber typeNumber) {
+        String currentText = displayResult.getText();
+
+        if (!isPlaceholderActive() && !currentText.isEmpty()) {
+            String convertedNumber = calculator.convertNumber(currentText, currentType, typeNumber);
+            displayResult.setText(convertedNumber);
+        }
+
+        currentType = typeNumber;
     }
 
     private void appendNumber(String number) {
@@ -227,8 +327,10 @@ public class JavaCalculator {
         } else {
             displayResult.setText(displayResult.getText() + number);
         }
-        lastNumber = Double.parseDouble(number);
+        lastNumber = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
+        binaryFormatter.updateDisplay(Integer.parseInt(number));
     }
+
 
     private void displayPlaceholder() {
         displayResult.setText(placeHolder);

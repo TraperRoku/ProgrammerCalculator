@@ -31,7 +31,7 @@ class CalculatorTest {
 
     @org.junit.jupiter.api.Test
     void divide() {
-        assertEquals((double) 2/3, calculator.divide(2, 3));
+        assertEquals( 2, calculator.divide(6, 3));
         assertEquals(2, calculator.divide(4, 2));
     }
 
