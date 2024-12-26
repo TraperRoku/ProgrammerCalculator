@@ -2,10 +2,11 @@ package gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigInteger;
 
 public class BinaryResultFormatter {
     private final JTextField textField;
-    private final int BITS = 64;
+
     private final int BITS_PER_GROUP = 4;
 
     public BinaryResultFormatter(JTextField textField) {
@@ -24,14 +25,20 @@ public class BinaryResultFormatter {
         ));
     }
 
-    public void updateDisplay(int value) {
+    public void updateDisplay(BigInteger value, int BITS) { // Accept BigInteger instead of int or long
+        String binaryStr;
 
-        String binaryStr = String.format("%64s", Integer.toBinaryString(value))
-                .replace(' ', '0');
+        // Constrain the value to the specified bit-width using a mask
+        BigInteger mask = BigInteger.ONE.shiftLeft(BITS).subtract(BigInteger.ONE);
+        value = value.and(mask); // Apply the mask to constrain to BITS
 
-        // Insert spaces between groups of 4 bits
+        // Generate the binary string
+        binaryStr = value.toString(2); // Convert BigInteger to binary string
+        binaryStr = String.format("%" + BITS + "s", binaryStr).replace(' ', '0'); // Pad with zeros
+
+        // Add spacing for readability
         StringBuilder formatted = new StringBuilder();
-        for (int i = 0; i < BITS; i++) {
+        for (int i = 0; i < binaryStr.length(); i++) {
             if (i > 0 && i % BITS_PER_GROUP == 0) {
                 formatted.append(' ');
             }
@@ -40,4 +47,6 @@ public class BinaryResultFormatter {
 
         textField.setText(formatted.toString());
     }
+
+
 }

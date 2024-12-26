@@ -6,21 +6,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigInteger;
 
 public class JavaCalculator {
 
     Calculator calculator = new Calculator(0);
 
-    private int total1 = 0;
+    private BigInteger total1 = BigInteger.ZERO;
     private String operator = "";
     private boolean isNewLine = false;
     private boolean isOperatorPressed = false;
-    private  String placeHolder = "0";
+    private String placeHolder = "0";
     private String lastOperator = "";
-    private int lastNumber = 0;
+    private BigInteger lastNumber = BigInteger.ZERO;
 
-    private Calculator.TypeNumber currentType = Calculator.TypeNumber.Dec;
-
+    private Calculator.TypeNumber currentTypeNumber = Calculator.TypeNumber.Dec;
+    private Calculator.TypeWord currentTypeWord = Calculator.TypeWord.Qword;
 
     private JPanel JavaCalculator;
     private JTextField binaryResult;
@@ -81,19 +82,10 @@ public class JavaCalculator {
     private JRadioButton wordRadioButton;
     private JRadioButton bajtRadioButton;
 
-
-
     public JavaCalculator() {
 
         binaryFormatter = new BinaryResultFormatter(binaryResult);
-
-        try {
-            int value = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
-            binaryFormatter.updateDisplay(value);
-        } catch (NumberFormatException ex) {
-            // Handle invalid number format
-            binaryResult.setText("0".repeat(32));
-        }
+        binaryFormatter.updateDisplay(BigInteger.ZERO, calculator.getBaseWord(currentTypeWord));
 
         decRadioButton.setSelected(true);
         qwordRadioButton.setSelected(true);
@@ -109,9 +101,6 @@ public class JavaCalculator {
 
         displayResult.setFont(new Font("Arial", Font.BOLD, 24));
         displayResult.setPreferredSize(new Dimension(500, 40));
-
-
-
 
         a0Button.addActionListener(e -> appendNumber("0"));
         a1Button.addActionListener(e -> appendNumber("1"));
@@ -129,13 +118,17 @@ public class JavaCalculator {
         octRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Oct));
         binRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Bin));
 
+        qwordRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Qword));
+        dwordRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Dword));
+        wordRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Word));
+        bajtRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Bajt));
 
         rówwnaSieButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty()) {
-                    int currentValue = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
-                    int result = 0;
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    BigInteger result = BigInteger.ZERO;
 
                     if (!lastOperator.isEmpty() && operator.isEmpty()) {
                         operator = lastOperator;
@@ -153,7 +146,7 @@ public class JavaCalculator {
                             result = calculator.multiply(total1, currentValue);
                             break;
                         case "/":
-                            if (currentValue != 0) {
+                            if (!currentValue.equals(BigInteger.ZERO)) {
                                 result = calculator.divide(total1, currentValue);
                             } else {
                                 JOptionPane.showMessageDialog(null, "Nie można dzielić przez zero!");
@@ -161,9 +154,9 @@ public class JavaCalculator {
                             }
                             break;
                     }
-                    displayResult.setText(calculator.convertNumber(Integer.toString(result), Calculator.TypeNumber.Dec, currentType));
+                    displayResult.setText(calculator.convertNumber(result.toString(), Calculator.TypeNumber.Dec, currentTypeNumber, currentTypeWord));
                     displayResult.setForeground(java.awt.Color.BLACK);
-                    binaryFormatter.updateDisplay(result);
+                    binaryFormatter.updateDisplay(result, calculator.getBaseWord(currentTypeWord));
                     lastOperator = operator;
                     operator = "";
                     lastNumber = currentValue;
@@ -178,60 +171,30 @@ public class JavaCalculator {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
-                    int currentValue = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
-                if(!isOperatorPressed) {
-                    if (operator.isEmpty()) {
-                        total1 = currentValue;
-                        operator = "+";
-
-                    } else {
-                        total1 = calculator.add(total1, currentValue);
-                        displayResult.setText(Double.toString(total1));
-                        binaryFormatter.updateDisplay(total1);
-
-                    }
-                    lastNumber = currentValue;
-                    isOperatorPressed = true;
-                    lastOperator = "+";
-
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "+";
+                        } else {
+                            total1 = calculator.add(total1, currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "+";
                     }
                 }
             }
         });
 
-        ActionListener listener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-            }
-        };
-        octRadioButton.addActionListener(listener);
-        binRadioButton.addActionListener(listener);
-        hexRadioButton.addActionListener(listener);
-        decRadioButton.addActionListener(listener);
-
-        //usuniecie calkowite
-        cButton1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                total1 =0;
-                displayPlaceholder();
-                lastOperator = "";
-            }
-        });
-
-        //usuniecie danej czynnosci czyli 5 + 4 (CE) -> 5 + ...
-        CEButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                displayPlaceholder();
-            }
-        });
         fieldMinus.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
-                    int currentValue = Integer.parseInt(displayResult.getText());
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     if (!isOperatorPressed) {
                         if (operator.isEmpty()) {
                             total1 = currentValue;
@@ -239,8 +202,8 @@ public class JavaCalculator {
 
                         } else {
                             total1 = calculator.subtract(total1, currentValue);
-                            displayResult.setText(Double.toString(total1));
-                            binaryFormatter.updateDisplay(total1);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1,calculator.getBaseWord(currentTypeWord));
 
                         }
                         lastNumber = total1;
@@ -259,7 +222,7 @@ public class JavaCalculator {
             public void actionPerformed(ActionEvent e) {
 
                 if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
-                    int currentValue = Integer.parseInt(displayResult.getText());
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     if (!isOperatorPressed) {
                         if (operator.isEmpty()) {
                             total1 = currentValue;
@@ -267,8 +230,8 @@ public class JavaCalculator {
 
                         } else {
                             total1 = calculator.multiply(total1, currentValue);
-                            displayResult.setText(Double.toString(total1));
-                            binaryFormatter.updateDisplay(total1);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1,calculator.getBaseWord(currentTypeWord));
 
                         }
                         lastNumber = total1;
@@ -284,7 +247,7 @@ public class JavaCalculator {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
-                    int currentValue = Integer.parseInt(displayResult.getText());
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     if (!isOperatorPressed) {
                         if (operator.isEmpty()) {
                             total1 = currentValue;
@@ -292,8 +255,8 @@ public class JavaCalculator {
 
                         } else {
                             total1 = calculator.divide(total1, currentValue);
-                            displayResult.setText(Double.toString(total1));
-                            binaryFormatter.updateDisplay(total1);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1,calculator.getBaseWord(currentTypeWord));
 
                         }
                         lastNumber = total1;
@@ -305,32 +268,72 @@ public class JavaCalculator {
             }
         });
 
+        //usuniecie danej czynnosci czyli 5 + 4 (CE) -> 5 + ...
+        CEButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displayPlaceholder();
+                binaryFormatter.updateDisplay(BigInteger.ZERO,calculator.getBaseWord(currentTypeWord));
+            }
+        });
+
+        cButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                total1 = BigInteger.ZERO;
+                displayPlaceholder();
+                lastOperator = "";
+                binaryFormatter.updateDisplay(BigInteger.ZERO, calculator.getBaseWord(currentTypeWord));
+            }
+        });
+    }
+
+
+
+    private void updateWord(Calculator.TypeWord typeWord) {
+        String currentText = displayResult.getText();
+
+        if (!isPlaceholderActive() && !currentText.isEmpty()) {
+            int baseWord = calculator.getBaseWord(typeWord);
+            String s = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+            BigInteger value = new BigInteger(s);
+            binaryFormatter.updateDisplay(value, baseWord);
+            displayResult.setText(calculator.convertNumber(value.toString(), currentTypeNumber, currentTypeNumber, typeWord));
+        } else {
+            int baseWord = calculator.getBaseWord(typeWord);
+            binaryFormatter.updateDisplay(BigInteger.ZERO, baseWord);
+        }
+
+        currentTypeWord = typeWord;
     }
 
     private void updateBase(Calculator.TypeNumber typeNumber) {
         String currentText = displayResult.getText();
 
         if (!isPlaceholderActive() && !currentText.isEmpty()) {
-            String convertedNumber = calculator.convertNumber(currentText, currentType, typeNumber);
+
+            String convertedNumber = calculator.convertNumber(currentText, currentTypeNumber, typeNumber,currentTypeWord);
             displayResult.setText(convertedNumber);
         }
 
-        currentType = typeNumber;
+        currentTypeNumber = typeNumber;
     }
 
     private void appendNumber(String number) {
-        if (isPlaceholderActive() || isOperatorPressed|| isNewLine) {
+        if (isPlaceholderActive() || isOperatorPressed || isNewLine) {
             displayResult.setText(number);
             displayResult.setForeground(java.awt.Color.BLACK);
             isOperatorPressed = false;
             isNewLine = false;
+            BigInteger currentValue = new BigInteger(number, calculator.getBaseValue(currentTypeNumber));
+            binaryFormatter.updateDisplay(currentValue, calculator.getBaseWord(currentTypeWord));
         } else {
             displayResult.setText(displayResult.getText() + number);
+            BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+            binaryFormatter.updateDisplay(currentValue, calculator.getBaseWord(currentTypeWord));
         }
-        lastNumber = Integer.parseInt(displayResult.getText(), calculator.getBaseValue(currentType));
-        binaryFormatter.updateDisplay(Integer.parseInt(number));
+        lastNumber = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
     }
-
 
     private void displayPlaceholder() {
         displayResult.setText(placeHolder);
@@ -341,17 +344,12 @@ public class JavaCalculator {
         return displayResult.getText().equals(placeHolder);
     }
 
-
     public static void main(String[] args) {
         JFrame frame = new JFrame("JavaCalculator");
-        frame.setSize(400,600);
+        frame.setSize(400, 600);
         frame.setContentPane(new JavaCalculator().JavaCalculator);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
-
-
-
-
 }

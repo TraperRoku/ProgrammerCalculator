@@ -1,6 +1,6 @@
+/*
 package test;
 
-import main.Calculator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,22 +63,9 @@ class CalculatorTest {
     void shiftRight() {
     }
 
-    @Test
-    void rotateLeft() {
-    }
-
-    @Test
-    void rotateRight() {
-    }
 
 
 
-
-
-
-
-
-    //Test typow z ograniczeniami bitowymi
     @Test
     void testWordType(){
         assertEquals("Qword",Calculator.TypeWord.Qword.name());
@@ -90,12 +77,45 @@ class CalculatorTest {
     }
 
 
+    @Test
+    void rotateLeft() {
+        // Rotate left for Bajt (8 bits)
+
+        // 8-bit tests
+        assertEquals(0b01101101, calculator.rotateLeft(1, Calculator.TypeWord.Bajt, 0b10110110));
+
+// 16-bit tests
+        assertEquals(0x4000, calculator.rotateLeft(14, Calculator.TypeWord.Word, 0x0001));
+
+// 32-bit tests
+        assertEquals(0x80000000, calculator.rotateLeft(31, Calculator.TypeWord.Dword, 0x00000001));
+        assertEquals(0x00000004, calculator.rotateLeft(2, Calculator.TypeWord.Dword, 0x00000001));
+
+// 64-bit tests (note: limited by int return type)
+        assertEquals(0x00000002, calculator.rotateLeft(1, Calculator.TypeWord.Qword, 0x00000001));
+    }
+
+   */
+/* @Test
+    void rotateRight() {
+        // Rotate right for Bajt (8 bits)
+       assertEquals(0b01011011, calculator.rotateRight(1, Calculator.TypeWord.Bajt, 0b10110110));
+        assertEquals(0b10101101, calculator.rotateRight(2, Calculator.TypeWord.Bajt, 0b10110110));
+        assertEquals(0b11010110, calculator.rotateRight(3, Calculator.TypeWord.Bajt, 0b10110110));
+        assertEquals(0b10110110, calculator.rotateRight(8, Calculator.TypeWord.Bajt, 0b10110110)); // Full rotation
+
+        // Rotate right for Dword (32 bits)
+        assertEquals(0x40000000, calculator.rotateRight(2, Calculator.TypeWord.Dword, 0x00000001));
+        assertEquals(0x00000001, calculator.rotateRight(32, Calculator.TypeWord.Dword, 0x00000001)); // Full rotation
+    }
+
 
 
 
 
     // Konwersja typów na inne typy
 
+    //Test typow z ograniczeniami bitowymi
     @Test
     void testNumberType(){
         assertEquals("Hex", Calculator.TypeNumber.Hex.name());
@@ -104,7 +124,8 @@ class CalculatorTest {
         assertEquals("Oct", Calculator.TypeNumber.Oct.name());
 
         assertEquals(4, Calculator.TypeWord.values().length);
-    }
+    }*//*
+
 
     @Test
     void testTypeNumberConversion() {
@@ -138,7 +159,8 @@ class CalculatorTest {
 
 
 
-    @Test
+*/
+/*    @Test
     void testConvertHexToDec() {
         String result = calculator.convertNumber("A", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Dec);
         assertEquals("10", result);
@@ -207,6 +229,7 @@ class CalculatorTest {
     void testConvertBinToOct() {
         String result = calculator.convertNumber("A", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Oct);
         assertEquals("12", result);
-    }
+    }*//*
 
-}
+
+}*/

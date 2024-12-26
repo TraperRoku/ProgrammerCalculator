@@ -1,38 +1,16 @@
 package main;
 
+import java.math.BigInteger;
+
 public class Calculator {
 
-    private double value;
-    public Calculator(double value){
-    this.value = value;
+    private BigInteger value;
+
+    public Calculator(double value) {
+        this.value = BigInteger.valueOf((long) value);
     }
 
-
-    public String calculateInBase(String num1, String num2, TypeNumber type, String operator) {
-        int decimalNum1 = Integer.parseInt(num1, getBaseValue(type));
-        int decimalNum2 = Integer.parseInt(num2, getBaseValue(type));
-        int result = 0;
-
-        switch (operator) {
-            case "+":
-                result = decimalNum1 + decimalNum2;
-                break;
-            case "-":
-                result = decimalNum1 - decimalNum2;
-                break;
-            case "*":
-                result = decimalNum1 * decimalNum2;
-                break;
-            case "/":
-                if (decimalNum2 == 0) throw new ArithmeticException("Nie można dzielić przez zero!");
-                result = decimalNum1 / decimalNum2;
-                break;
-        }
-
-        return convertNumber(Integer.toString(result), TypeNumber.Dec, type);
-    }
-
-    public int getBaseValue(Calculator.TypeNumber base) {
+    public int getBaseValue(TypeNumber base) {
         return switch (base) {
             case Hex -> 16;
             case Oct -> 8;
@@ -41,104 +19,163 @@ public class Calculator {
         };
     }
 
-    public enum TypeNumber{
-    Hex,Dec,Oct,Bin
-    }
-    public enum TypeWord{
-        Qword,Dword,Word,Bajt
+    public enum TypeNumber {
+        Hex, Dec, Oct, Bin
     }
 
-    public String convertNumber(String number, TypeNumber fromType, TypeNumber toType) {
-        int decimalValue = 0;
-        switch (fromType) {
-            case Hex:
-                decimalValue = Integer.parseInt(number, 16);
-                break;
-            case Bin:
-                decimalValue = Integer.parseInt(number, 2);
-                break;
-            case Oct:
-                decimalValue = Integer.parseInt(number, 8);
-                break;
-            case Dec:
-                decimalValue = Integer.parseInt(number);
-                break;
+    public enum TypeWord {
+        Qword, Dword, Word, Bajt
+    }
+
+    public String convertNumber(String number, TypeNumber fromType, TypeNumber toType, TypeWord currentTypeWord) {
+        // Step 1: Parse the input number based on the 'fromType'
+
+        BigInteger bigInteger = switch (fromType) {
+            case Hex -> new BigInteger(number, 16);
+            //TODO przy duzych liczbach wyrzuca for example 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1110
+            //TODO mysl podzielic ta liczbe na dwa a potem zlepic jeszcze nie wiem jak wyjdzie w praniu
+            case Bin -> new BigInteger(number, 2);
+
+
+                  case Oct ->  new BigInteger(number, 8);
+            case Dec -> new BigInteger(number); // Decimal
+        };
+
+        // Step 2: Apply the type word constraints and handle two's complement
+        int bitWidth = switch (currentTypeWord) {
+            case Bajt -> 8;
+            case Word -> 16;
+            case Dword -> 32;
+            case Qword -> 64;
+        };
+
+        BigInteger mask = BigInteger.ONE.shiftLeft(bitWidth).subtract(BigInteger.ONE); // Mask for n bits
+        BigInteger twoComplementBase = BigInteger.ONE.shiftLeft(bitWidth);            // Base for two's complement
+
+        // Handle two's complement for negative values
+        if (bigInteger.signum() < 0) {
+            bigInteger = bigInteger.add(twoComplementBase);
         }
 
+        // Constrain the number to the given bit width
+        bigInteger = bigInteger.and(mask);
 
+        // Step 3: Convert to the target type and return formatted output
         switch (toType) {
             case Hex:
-                return Integer.toHexString(decimalValue).toUpperCase();
+                return bigInteger.toString(16).toUpperCase(); // Hexadecimal
             case Bin:
-                return Integer.toBinaryString(decimalValue);
+                // Format binary output with spaces for better readability
+                String binaryDisplay = bigInteger.toString(2);
+                return formatBinary(binaryDisplay, bitWidth);
             case Oct:
-                return Integer.toOctalString(decimalValue);
+                return bigInteger.toString(8);                // Octal
             case Dec:
-                return Integer.toString(decimalValue);
+                // Return as signed number
+                if (bigInteger.testBit(bitWidth - 1)) {
+                    // Negative number in two's complement
+                    return bigInteger.subtract(twoComplementBase).toString();
+                } else {
+                    return bigInteger.toString();
+                }
         }
-        return null;
+
+        return null; // Default return
     }
 
-    public int add(int a, int b) {
-        return a + b;
+    // Helper method to format binary string into groups of 4 bits
+    private String formatBinary(String binary, int bitWidth) {
+        // Ensure the binary string is padded to the full bit width
+        binary = String.format("%" + bitWidth + "s", binary).replace(' ', '0');
+
+        // Insert spaces every 4 bits for readability
+        StringBuilder formatted = new StringBuilder();
+        for (int i = 0; i < binary.length(); i++) {
+            if (i > 0 && i % 4 == 0) {
+                formatted.append(" ");
+            }
+            formatted.append(binary.charAt(i));
+        }
+        return formatted.toString();
     }
 
-    public int subtract(int a, int b) {
-        return a - b;
+    public int getBaseWord(TypeWord word) {
+        return switch (word) {
+            case Bajt -> 8;
+            case Dword -> 32;
+            case Word -> 16;
+            default -> 64;
+        };
     }
 
-    public int multiply(int a, int b) {
-        return a * b;
+    public BigInteger add(BigInteger a, BigInteger b) {
+        return a.add(b);
     }
 
-    public int divide(int a, int b) throws IllegalArgumentException {
-        if (b == 0) {
+    public BigInteger subtract(BigInteger a, BigInteger b) {
+        return a.subtract(b);
+    }
+
+    public BigInteger multiply(BigInteger a, BigInteger b) {
+        return a.multiply(b);
+    }
+
+    public BigInteger divide(BigInteger a, BigInteger b) throws IllegalArgumentException {
+        if (b.equals(BigInteger.ZERO)) {
             throw new IllegalArgumentException("Nie można dzielić przez zero!");
         }
-        return a / b;
+        return a.divide(b);
     }
 
-
-    public int bitAnd(int a, int b) {
-        return a & b;
+    public BigInteger bitAnd(BigInteger a, BigInteger b) {
+        return a.and(b);
     }
 
-    public int bitOr(int a, int b) {
-        return a | b;
+    public BigInteger bitOr(BigInteger a, BigInteger b) {
+        return a.or(b);
     }
 
-    public int bitXor(int a, int b) {
-        return a ^ b;
+    public BigInteger bitXor(BigInteger a, BigInteger b) {
+        return a.xor(b);
     }
 
-    public int bitNot(int a) {
-        return ~a;
+    public BigInteger bitNot(BigInteger a) {
+        return a.not();
     }
 
-    public int shiftLeft(int a, int n) {
-        return a << n;
+    public BigInteger shiftLeft(BigInteger a, int n) {
+        return a.shiftLeft(n);
     }
 
-    public int shiftRight(int a, int n) {
-        return a >> n;
+    public BigInteger shiftRight(BigInteger a, int n) {
+        return a.shiftRight(n);
     }
 
-    public int rotateLeft(int value, int n) {
-        int size = Integer.SIZE; // Dla int to 32 bity
-        return (value << n) | (value >>> (size - n));
+    public BigInteger rotateLeft(int positions, TypeWord typeWord, BigInteger value) {
+        int bitSize = getBaseWord(typeWord);
+        positions = positions % bitSize;
+
+        BigInteger mask = BigInteger.ONE.shiftLeft(bitSize).subtract(BigInteger.ONE);
+        value = value.and(mask); // Constrain to the bit size
+
+        return value.shiftLeft(positions).or(value.shiftRight(bitSize - positions)).and(mask);
     }
 
-    public int rotateRight(int value, int n) {
-        int size = Integer.SIZE; // Dla int to 32 bity
-        return (value >>> n) | (value << (size - n));
+    public BigInteger rotateRight(int positions, TypeWord typeWord, BigInteger value) {
+        int bitSize = getBaseWord(typeWord);
+        positions = positions % bitSize;
+
+        BigInteger mask = BigInteger.ONE.shiftLeft(bitSize).subtract(BigInteger.ONE);
+        value = value.and(mask); // Constrain to the bit size
+
+        return value.shiftRight(positions).or(value.shiftLeft(bitSize - positions)).and(mask);
     }
 
-
-    public double getValue() {
+    public BigInteger getValue() {
         return value;
     }
 
-    public void setValue(double value) {
+    public void setValue(BigInteger value) {
         this.value = value;
     }
 }
