@@ -294,11 +294,27 @@ public class JavaCalculator {
         String currentText = displayResult.getText();
 
         if (!isPlaceholderActive() && !currentText.isEmpty()) {
+
             int baseWord = calculator.getBaseWord(typeWord);
-            String s = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
-            BigInteger value = new BigInteger(s);
-            binaryFormatter.updateDisplay(value, baseWord);
-            displayResult.setText(calculator.convertNumber(value.toString(), currentTypeNumber, currentTypeNumber, typeWord));
+            int currentBaseWord = calculator.getBaseWord(currentTypeWord);
+
+            if(currentTypeNumber != Calculator.TypeNumber.Bin){
+
+                String s = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+                BigInteger value = new BigInteger(s);
+                binaryFormatter.updateDisplay(value, baseWord);
+
+                displayResult.setText(calculator.convertNumber(value.toString(), currentTypeNumber, currentTypeNumber, typeWord));
+
+
+            }else{
+
+                displayResult.setText(binaryFormatter.updateFromDisplay(currentText, baseWord,currentBaseWord));
+
+
+
+            }
+
         } else {
             int baseWord = calculator.getBaseWord(typeWord);
             binaryFormatter.updateDisplay(BigInteger.ZERO, baseWord);

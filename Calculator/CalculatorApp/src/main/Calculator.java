@@ -35,9 +35,7 @@ public class Calculator {
             //TODO przy duzych liczbach wyrzuca for example 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1110
             //TODO mysl podzielic ta liczbe na dwa a potem zlepic jeszcze nie wiem jak wyjdzie w praniu
             case Bin -> new BigInteger(number, 2);
-
-
-                  case Oct ->  new BigInteger(number, 8);
+            case Oct ->  new BigInteger(number, 8);
             case Dec -> new BigInteger(number); // Decimal
         };
 
@@ -65,9 +63,7 @@ public class Calculator {
             case Hex:
                 return bigInteger.toString(16).toUpperCase(); // Hexadecimal
             case Bin:
-                // Format binary output with spaces for better readability
-                String binaryDisplay = bigInteger.toString(2);
-                return formatBinary(binaryDisplay, bitWidth);
+                return bigInteger.toString(2);
             case Oct:
                 return bigInteger.toString(8);                // Octal
             case Dec:
@@ -84,20 +80,7 @@ public class Calculator {
     }
 
     // Helper method to format binary string into groups of 4 bits
-    private String formatBinary(String binary, int bitWidth) {
-        // Ensure the binary string is padded to the full bit width
-        binary = String.format("%" + bitWidth + "s", binary).replace(' ', '0');
 
-        // Insert spaces every 4 bits for readability
-        StringBuilder formatted = new StringBuilder();
-        for (int i = 0; i < binary.length(); i++) {
-            if (i > 0 && i % 4 == 0) {
-                formatted.append(" ");
-            }
-            formatted.append(binary.charAt(i));
-        }
-        return formatted.toString();
-    }
 
     public int getBaseWord(TypeWord word) {
         return switch (word) {
