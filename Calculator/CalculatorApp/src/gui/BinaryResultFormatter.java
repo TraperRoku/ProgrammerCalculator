@@ -48,70 +48,61 @@ public class BinaryResultFormatter {
         }
 
         textField.setText(formatted.toString());
+
+
     }
 
     public String updateFromDisplay(String value, int BITS, int BITSCurrentTypeWord) {
-        String cleanBinary = value.replace(" ", "");
-
-        StringBuilder formatted = new StringBuilder();
+        String cleanBinary = value.replace(" ", ""); // Remove spaces from the input
 
         // If the input is empty, return a single zero
         if (cleanBinary.isEmpty()) {
+            textField.setText("0");
             return "0";
         }
 
-        if (BITS < cleanBinary.length()) {
-            // Need to truncate - keep rightmost BITS
-            cleanBinary =  cleanBinary.substring(cleanBinary.length() - BITS);
-
-            for (int i = BITS; i >0; i--) {
-                if ( i % BITS_PER_GROUP == 0) {
-                    formatted.append(' ');
-                }
-                formatted.append(cleanBinary.charAt((cleanBinary.length()) - i));
-            }
-
-            textField.setText(formatted.toString());
-            return cleanBinary;
-
+        // Truncate the binary string to the rightmost BITS if it's too long
+        if (cleanBinary.length() > BITS) {
+            cleanBinary = cleanBinary.substring(cleanBinary.length() - BITS);
         } else {
-            // If our binary is shorter than current word type, pad it first
+            // Pad the binary string to the current word type length (BITSCurrentTypeWord)
             if (cleanBinary.length() < BITSCurrentTypeWord) {
-                cleanBinary = "0".repeat(BITSCurrentTypeWord - cleanBinary.length()) + cleanBinary;
+                cleanBinary = "0".repeat(BITS - cleanBinary.length()) + cleanBinary;
             }
-
-            char signBit = cleanBinary.charAt(0);
-
-            if (signBit == '1') {
-                cleanBinary= "1".repeat(BITS - cleanBinary.length()) + cleanBinary;
-
-                for (int i = 0; i < BITS; i++) {
-                    if (i > 0 && i % BITS_PER_GROUP == 0) {
-                        formatted.append(' ');
-                    }
-                    formatted.append(cleanBinary.charAt(i));
-                }
-
-                textField.setText(formatted.toString());
-
-            } else {
-
-                for (int i = BITS; i >0; i--) {
-                    if ( i % BITS_PER_GROUP == 0) {
-                        formatted.append(' ');
-                    }
-                    formatted.append(cleanBinary.charAt((cleanBinary.length()) - i));
-                }
-
-                textField.setText(formatted.toString());
-
-                while (cleanBinary.length() > 1 && cleanBinary.charAt(0) == '0') {
-                    cleanBinary = cleanBinary.substring(1);
-                }
-            }
-            return cleanBinary;
         }
+
+        // Handle sign extension for negative numbers if the most significant bit (MSB) is 1
+        char signBit = cleanBinary.charAt(0);
+        if (signBit == '1' && cleanBinary.length() < BITS) {
+            cleanBinary = "1".repeat(BITS - cleanBinary.length()) + cleanBinary;
+        }
+
+        String cleanBinaryCopy = new String(cleanBinary);
+
+        while ((cleanBinaryCopy.length() > 1 && cleanBinaryCopy.charAt(0) == '0')) {
+            cleanBinaryCopy = cleanBinaryCopy.substring(1);
+        }
+
+        while ((cleanBinary.length() > 1 && cleanBinary.charAt(0) == '0')&&(cleanBinary.length() !=BITS)) {
+            cleanBinary = cleanBinary.substring(1);
+        }
+
+
+        StringBuilder formatted = new StringBuilder();
+        for (int i = 0; i < cleanBinary.length(); i++) {
+            if (i > 0 && i % BITS_PER_GROUP == 0) {
+                formatted.append(' '); // Add a space after every 4 bits
+            }
+            formatted.append(cleanBinary.charAt(i));
+        }
+
+        // Update the text field with the formatted binary string
+        textField.setText(formatted.toString());
+
+        // Return the clean binary string without spaces
+        return cleanBinaryCopy;
     }
+
 
 
 

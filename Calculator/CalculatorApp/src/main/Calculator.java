@@ -126,32 +126,33 @@ public class Calculator {
         return a.not();
     }
 
-    public BigInteger shiftLeft(BigInteger a, int n) {
-        return a.shiftLeft(n);
+    public BigInteger shiftLeft(BigInteger a, BigInteger n) {
+        int newN = n.intValue();
+        return a.shiftLeft(newN);
     }
 
-    public BigInteger shiftRight(BigInteger a, int n) {
-        return a.shiftRight(n);
+    public BigInteger shiftRight(BigInteger a, BigInteger n) {
+        int newN = n.intValue();
+        return a.shiftRight(newN);
     }
 
-    public BigInteger rotateLeft(int positions, TypeWord typeWord, BigInteger value) {
+    public BigInteger rotateLeft(TypeWord typeWord, BigInteger value) {
         int bitSize = getBaseWord(typeWord);
-        positions = positions % bitSize;
 
         BigInteger mask = BigInteger.ONE.shiftLeft(bitSize).subtract(BigInteger.ONE);
         value = value.and(mask); // Constrain to the bit size
 
-        return value.shiftLeft(positions).or(value.shiftRight(bitSize - positions)).and(mask);
+        return value.shiftLeft(1).or(value.shiftRight(bitSize - 1)).and(mask);
     }
 
-    public BigInteger rotateRight(int positions, TypeWord typeWord, BigInteger value) {
+    public BigInteger rotateRight(TypeWord typeWord, BigInteger value) {
         int bitSize = getBaseWord(typeWord);
-        positions = positions % bitSize;
+
 
         BigInteger mask = BigInteger.ONE.shiftLeft(bitSize).subtract(BigInteger.ONE);
         value = value.and(mask); // Constrain to the bit size
 
-        return value.shiftRight(positions).or(value.shiftLeft(bitSize - positions)).and(mask);
+        return value.shiftRight(1).or(value.shiftLeft(bitSize - 1)).and(mask);
     }
 
     public BigInteger getValue() {

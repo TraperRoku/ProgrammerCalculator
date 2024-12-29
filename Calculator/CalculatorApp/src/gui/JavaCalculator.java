@@ -20,6 +20,7 @@ public class JavaCalculator {
     private String lastOperator = "";
     private BigInteger lastNumber = BigInteger.ZERO;
 
+
     private Calculator.TypeNumber currentTypeNumber = Calculator.TypeNumber.Dec;
     private Calculator.TypeWord currentTypeWord = Calculator.TypeWord.Qword;
 
@@ -32,15 +33,15 @@ public class JavaCalculator {
     private JButton roRButton;
     private JButton button5;
     private JButton modButton;
-    private JButton button7;
+    private JButton blankButton;
     private JButton button8;
     private JButton roLButton;
     private JButton orButton;
     private JButton lshButton;
     private JButton notButton;
-    private JButton mButton;
+    private JButton MMButton;
     private JButton sqrtButton;
-    private JButton button15;
+    private JButton procentButton;
     private JButton a1XButton;
     private JButton rówwnaSieButton;
     private JButton MSButton;
@@ -72,7 +73,7 @@ public class JavaCalculator {
     private JButton fieldMultiplication;
     private JButton fieldDivide;
     private JButton fieldPlusOrMinus;
-    private JButton fieldMPlus;
+    private JButton MPField;
     private JRadioButton hexRadioButton;
     private JRadioButton decRadioButton;
     private JRadioButton octRadioButton;
@@ -83,6 +84,9 @@ public class JavaCalculator {
     private JRadioButton bajtRadioButton;
 
     public JavaCalculator() {
+
+
+       turnOffButtons();
 
         binaryFormatter = new BinaryResultFormatter(binaryResult);
         binaryFormatter.updateDisplay(BigInteger.ZERO, calculator.getBaseWord(currentTypeWord));
@@ -112,6 +116,13 @@ public class JavaCalculator {
         a7Button.addActionListener(e -> appendNumber("7"));
         a8Button.addActionListener(e -> appendNumber("8"));
         a9Button.addActionListener(e -> appendNumber("9"));
+
+         aButton.addActionListener(e -> appendNumber("A"));
+         bButton.addActionListener(e -> appendNumber("B"));
+         cButton.addActionListener(e -> appendNumber("C"));
+         dButton.addActionListener(e -> appendNumber("D"));
+         eButton.addActionListener(e -> appendNumber("E"));
+         fButton.addActionListener(e -> appendNumber("F"));
 
         hexRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Hex));
         decRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Dec));
@@ -153,6 +164,14 @@ public class JavaCalculator {
                                 return;
                             }
                             break;
+
+                        case "rsh":
+                            result = calculator.shiftRight(total1,currentValue);
+                            break;
+
+                        case "lsh":
+                            result = calculator.shiftLeft(total1,currentValue);
+                            break;
                     }
                     displayResult.setText(calculator.convertNumber(result.toString(), Calculator.TypeNumber.Dec, currentTypeNumber, currentTypeWord));
                     displayResult.setForeground(java.awt.Color.BLACK);
@@ -188,8 +207,6 @@ public class JavaCalculator {
                 }
             }
         });
-
-
         fieldMinus.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -286,12 +303,87 @@ public class JavaCalculator {
                 binaryFormatter.updateDisplay(BigInteger.ZERO, calculator.getBaseWord(currentTypeWord));
             }
         });
+        roRButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String currentText = displayResult.getText();
+
+                String displayValue = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+
+                BigInteger value = new BigInteger(displayValue);
+
+                BigInteger rotatedValue = calculator.rotateRight(currentTypeWord, value);
+
+                displayResult.setText(calculator.convertNumber(rotatedValue.toString(), Calculator.TypeNumber.Dec, currentTypeNumber, currentTypeWord));
+                binaryFormatter.updateDisplay(rotatedValue, calculator.getBaseWord(currentTypeWord));
+            }
+        });
+        roLButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String currentText = displayResult.getText();
+
+                String displayValue = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+
+                BigInteger value = new BigInteger(displayValue);
+
+                BigInteger rotatedValue = calculator.rotateLeft(currentTypeWord, value);
+
+                displayResult.setText(calculator.convertNumber(rotatedValue.toString(), Calculator.TypeNumber.Dec, currentTypeNumber, currentTypeWord));
+                binaryFormatter.updateDisplay(rotatedValue, calculator.getBaseWord(currentTypeWord));
+            }
+        });
+
+
+        rshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "rsh";
+                        } else {
+
+                            total1 =  calculator.shiftRight(total1,currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "rsh";
+                    }
+                }
+            }
+        });
+
+        lshButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "lsh";
+                        } else {
+
+                            total1 =  calculator.shiftLeft(total1,currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "lsh";
+                    }
+                }
+            }
+        });
     }
-
-
-
     private void updateWord(Calculator.TypeWord typeWord) {
         String currentText = displayResult.getText();
+
 
         if (!isPlaceholderActive() && !currentText.isEmpty()) {
 
@@ -300,12 +392,12 @@ public class JavaCalculator {
 
             if(currentTypeNumber != Calculator.TypeNumber.Bin){
 
-                String s = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
-                BigInteger value = new BigInteger(s);
+                String displayValue = calculator.convertNumber(currentText, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+                BigInteger value = new BigInteger(displayValue);
                 binaryFormatter.updateDisplay(value, baseWord);
 
-                displayResult.setText(calculator.convertNumber(value.toString(), currentTypeNumber, currentTypeNumber, typeWord));
-
+                String result = calculator.convertNumber(displayValue, Calculator.TypeNumber.Dec, currentTypeNumber, typeWord);
+                displayResult.setText(result);
 
             }else{
 
@@ -326,6 +418,7 @@ public class JavaCalculator {
     private void updateBase(Calculator.TypeNumber typeNumber) {
         String currentText = displayResult.getText();
 
+
         if (!isPlaceholderActive() && !currentText.isEmpty()) {
 
             String convertedNumber = calculator.convertNumber(currentText, currentTypeNumber, typeNumber,currentTypeWord);
@@ -333,6 +426,20 @@ public class JavaCalculator {
         }
 
         currentTypeNumber = typeNumber;
+        switch (typeNumber) {
+            case Bin:
+                enableButtonsForBinary();
+                break;
+            case Oct:
+                enableButtonsForOctal();
+                break;
+            case Dec:
+                enableButtonsForDecimal();
+                break;
+            case Hex:
+                enableButtonsForHexadecimal();
+                break;
+        }
     }
 
     private void appendNumber(String number) {
@@ -360,8 +467,151 @@ public class JavaCalculator {
         return displayResult.getText().equals(placeHolder);
     }
 
+
+    private void resetAllButtons() {
+        // Wyłącz wszystkie przyciski i ustaw ich kolor na szary
+        a0Button.setEnabled(false);
+        a1Button.setEnabled(false);
+        a2Button.setEnabled(false);
+        a3Button.setEnabled(false);
+        a4Button.setEnabled(false);
+        a5Button.setEnabled(false);
+        a6Button.setEnabled(false);
+        a7Button.setEnabled(false);
+        a8Button.setEnabled(false);
+        a9Button.setEnabled(false);
+        aButton.setEnabled(false);
+        bButton.setEnabled(false);
+        cButton.setEnabled(false);
+        dButton.setEnabled(false);
+        eButton.setEnabled(false);
+        fButton.setEnabled(false);
+
+
+
+        Color disabledColor = Color.GRAY;
+        a0Button.setForeground(disabledColor);
+        a1Button.setForeground(disabledColor);
+        a2Button.setForeground(disabledColor);
+        a3Button.setForeground(disabledColor);
+        a4Button.setForeground(disabledColor);
+        a5Button.setForeground(disabledColor);
+        a6Button.setForeground(disabledColor);
+        a7Button.setForeground(disabledColor);
+        a8Button.setForeground(disabledColor);
+        a9Button.setForeground(disabledColor);
+        aButton.setForeground(disabledColor);
+        bButton.setForeground(disabledColor);
+        cButton.setForeground(disabledColor);
+        dButton.setForeground(disabledColor);
+        eButton.setForeground(disabledColor);
+        fButton.setForeground(disabledColor);
+
+
+    }
+
+    private void enableButtonsForBinary() {
+        resetAllButtons();
+        // Włącz tylko 0 i 1
+        a0Button.setEnabled(true);
+        a1Button.setEnabled(true);
+
+        Color enabledColor = Color.BLACK;
+        a0Button.setForeground(enabledColor);
+        a1Button.setForeground(enabledColor);
+    }
+
+    private void enableButtonsForOctal() {
+        resetAllButtons();
+        // Włącz przyciski od 0 do 7
+        a0Button.setEnabled(true);
+        a1Button.setEnabled(true);
+        a2Button.setEnabled(true);
+        a3Button.setEnabled(true);
+        a4Button.setEnabled(true);
+        a5Button.setEnabled(true);
+        a6Button.setEnabled(true);
+        a7Button.setEnabled(true);
+
+        Color enabledColor = Color.BLACK;
+        a0Button.setForeground(enabledColor);
+        a1Button.setForeground(enabledColor);
+        a2Button.setForeground(enabledColor);
+        a3Button.setForeground(enabledColor);
+        a4Button.setForeground(enabledColor);
+        a5Button.setForeground(enabledColor);
+        a6Button.setForeground(enabledColor);
+        a7Button.setForeground(enabledColor);
+    }
+
+    private void enableButtonsForDecimal() {
+        resetAllButtons();
+        // Włącz przyciski od 0 do 9
+        a0Button.setEnabled(true);
+        a1Button.setEnabled(true);
+        a2Button.setEnabled(true);
+        a3Button.setEnabled(true);
+        a4Button.setEnabled(true);
+        a5Button.setEnabled(true);
+        a6Button.setEnabled(true);
+        a7Button.setEnabled(true);
+        a8Button.setEnabled(true);
+        a9Button.setEnabled(true);
+
+        Color enabledColor = Color.BLACK;
+        a0Button.setForeground(enabledColor);
+        a1Button.setForeground(enabledColor);
+        a2Button.setForeground(enabledColor);
+        a3Button.setForeground(enabledColor);
+        a4Button.setForeground(enabledColor);
+        a5Button.setForeground(enabledColor);
+        a6Button.setForeground(enabledColor);
+        a7Button.setForeground(enabledColor);
+        a8Button.setForeground(enabledColor);
+        a9Button.setForeground(enabledColor);
+    }
+
+    private void enableButtonsForHexadecimal() {
+        resetAllButtons();
+        // Włącz wszystkie przyciski od 0 do 9 i A-F
+        enableButtonsForDecimal();
+
+        aButton.setEnabled(true);
+        bButton.setEnabled(true);
+        cButton.setEnabled(true);
+        dButton.setEnabled(true);
+        eButton.setEnabled(true);
+        fButton.setEnabled(true);
+
+        Color enabledColor = Color.BLACK;
+        aButton.setForeground(enabledColor);
+        bButton.setForeground(enabledColor);
+        cButton.setForeground(enabledColor);
+        dButton.setForeground(enabledColor);
+        eButton.setForeground(enabledColor);
+        fButton.setForeground(enabledColor);
+    }
+
+    private void turnOffButtons(){
+        sqrtButton.setEnabled(false);
+        procentButton.setEnabled(false);
+        a1XButton.setEnabled(false);
+        blankButton.setEnabled(false);
+
+        sqrtButton.setForeground(Color.GRAY);
+        procentButton.setForeground(Color.GRAY);
+        a1XButton.setForeground(Color.GRAY);
+        blankButton.setForeground(Color.GRAY);
+    }
+
+
+
+
     public static void main(String[] args) {
+
         JFrame frame = new JFrame("JavaCalculator");
+
+
         frame.setSize(400, 600);
         frame.setContentPane(new JavaCalculator().JavaCalculator);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
