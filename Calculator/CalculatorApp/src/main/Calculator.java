@@ -125,6 +125,9 @@ public class Calculator {
     public BigInteger bitNot(BigInteger a) {
         return a.not();
     }
+    public BigInteger mod(BigInteger a,BigInteger m){
+        return a.mod(m);
+    }
 
     public BigInteger shiftLeft(BigInteger a, BigInteger n) {
         int newN = n.intValue();

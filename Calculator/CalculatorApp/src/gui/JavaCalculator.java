@@ -7,10 +7,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigInteger;
+import java.util.Stack;
 
 public class JavaCalculator {
 
     Calculator calculator = new Calculator(0);
+
+    private Stack<BigInteger> numbers = new Stack<>();
+    private Stack<String> operators = new Stack<>();
+    private int parenthesesCount = 0;
+    private boolean isInParentheses = false;
+
+    private BigInteger memoryValue = BigInteger.ZERO;
 
     private BigInteger total1 = BigInteger.ZERO;
     private String operator = "";
@@ -31,10 +39,10 @@ public class JavaCalculator {
     private JButton rshButton;
     private JButton xorButton;
     private JButton roRButton;
-    private JButton button5;
+    private JButton rightBrackets;
     private JButton modButton;
     private JButton blankButton;
-    private JButton button8;
+    private JButton leftBrackets;
     private JButton roLButton;
     private JButton orButton;
     private JButton lshButton;
@@ -82,10 +90,11 @@ public class JavaCalculator {
     private JRadioButton dwordRadioButton;
     private JRadioButton wordRadioButton;
     private JRadioButton bajtRadioButton;
+    private JLabel ifTrueMS;
 
     public JavaCalculator() {
 
-
+        ifTrueMS.setEnabled(false);
        turnOffButtons();
 
         binaryFormatter = new BinaryResultFormatter(binaryResult);
@@ -124,6 +133,8 @@ public class JavaCalculator {
          eButton.addActionListener(e -> appendNumber("E"));
          fButton.addActionListener(e -> appendNumber("F"));
 
+
+
         hexRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Hex));
         decRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Dec));
         octRadioButton.addActionListener(e -> updateBase(Calculator.TypeNumber.Oct));
@@ -137,7 +148,7 @@ public class JavaCalculator {
         rówwnaSieButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty()) {
+                if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty() && !isInParentheses) {
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     BigInteger result = BigInteger.ZERO;
 
@@ -172,6 +183,21 @@ public class JavaCalculator {
                         case "lsh":
                             result = calculator.shiftLeft(total1,currentValue);
                             break;
+                        case "xor":
+                            result = calculator.bitXor(total1,currentValue);
+                            break;
+
+                        case "or":
+                            result = calculator.bitOr(total1,currentValue);
+                            break;
+                        case "and":
+                            result = calculator.bitAnd(total1,currentValue);
+                            break;
+                        case "mod":
+                            result = calculator.mod(total1,currentValue);
+                            break;
+
+
                     }
                     displayResult.setText(calculator.convertNumber(result.toString(), Calculator.TypeNumber.Dec, currentTypeNumber, currentTypeWord));
                     displayResult.setForeground(java.awt.Color.BLACK);
@@ -189,10 +215,10 @@ public class JavaCalculator {
         fieldPlus.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty() ) {
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
-                    if (!isOperatorPressed) {
-                        if (operator.isEmpty()) {
+                    if (!isOperatorPressed ) {
+                        if (operator.isEmpty()  ) {
                             total1 = currentValue;
                             operator = "+";
                         } else {
@@ -238,7 +264,7 @@ public class JavaCalculator {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty() && !isInParentheses) {
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     if (!isOperatorPressed) {
                         if (operator.isEmpty()) {
@@ -300,6 +326,7 @@ public class JavaCalculator {
                 total1 = BigInteger.ZERO;
                 displayPlaceholder();
                 lastOperator = "";
+                operator ="";
                 binaryFormatter.updateDisplay(BigInteger.ZERO, calculator.getBaseWord(currentTypeWord));
             }
         });
@@ -380,6 +407,216 @@ public class JavaCalculator {
                 }
             }
         });
+        notButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+
+                            total1 =  calculator.bitNot(currentValue);
+
+                            displayResult.setText( calculator.convertNumber(total1.toString(), Calculator.TypeNumber.Dec,currentTypeNumber,currentTypeWord));
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                    lastOperator = "";
+                    operator = "";
+                    }
+
+            }
+        });
+        andButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "and";
+                        } else {
+
+                            total1 =  calculator.bitAnd(total1,currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "and";
+                    }
+                }
+            }
+        });
+        orButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "or";
+                        } else {
+
+                            total1 =  calculator.bitOr(total1,currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "or";
+                    }
+                }
+            }
+        });
+        xorButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "xor";
+                        } else {
+
+                            total1 =  calculator.bitXor(total1,currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "xor";
+                    }
+                }
+            }
+        });
+        fieldPlusOrMinus.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+
+                    total1 =  currentValue.multiply(new BigInteger("-1"));
+
+                    displayResult.setText( calculator.convertNumber(total1.toString(), Calculator.TypeNumber.Dec,currentTypeNumber,currentTypeWord));
+                    binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                    lastOperator = "";
+                    operator = "";
+                }
+            }
+        });
+        modButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    if (!isOperatorPressed) {
+                        if (operator.isEmpty()) {
+                            total1 = currentValue;
+                            operator = "mod";
+                        } else {
+
+                            total1 =  calculator.mod(total1,currentValue);
+                            displayResult.setText(total1.toString());
+                            binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                        }
+                        lastNumber = currentValue;
+                        isOperatorPressed = true;
+                        lastOperator = "mod";
+                    }
+                }
+            }
+        });
+
+        //Czysci wartosc w pamieci
+        MCButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                memoryValue = BigInteger.ZERO;
+                ifTrueMS.setEnabled(false);
+            }
+        });
+
+        // Wyświetla wartość z pamięci
+        MRButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displayResult.setText(memoryValue.toString());
+                binaryFormatter.updateDisplay(memoryValue, calculator.getBaseWord(currentTypeWord));
+                placeHolder = String.valueOf(memoryValue);
+            }
+        });
+
+        MSButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                    memoryValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    placeHolder = String.valueOf(memoryValue);
+                    ifTrueMS.setEnabled(true);
+
+
+            }
+        });
+        // Dodaje bieżącą wartość do pamięci
+        MPField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    memoryValue = memoryValue.add(currentValue);
+                    placeHolder = String.valueOf(memoryValue);
+                }
+            }
+        });
+        // Odejmuje bieżącą wartość od pamięci
+        MMButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                    BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                    memoryValue = memoryValue.subtract(currentValue);
+                    placeHolder = String.valueOf(memoryValue);
+                }
+            }
+        });
+        button32.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String displayValue = displayResult.getText();
+
+                if (!displayValue.isEmpty()) {
+                    String newDisplayValue = displayValue.substring(0, displayValue.length() - 1);
+                    displayResult.setText(newDisplayValue);
+
+
+                   if(!newDisplayValue.isEmpty()) {
+                       String convertedValue = calculator.convertNumber(newDisplayValue, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+
+
+                       binaryFormatter.updateDisplay(new BigInteger(convertedValue), calculator.getBaseWord(currentTypeWord));
+                   }else{
+                       binaryFormatter.updateDisplay(new BigInteger("0"),calculator.getBaseWord(currentTypeWord));
+                       displayResult.setText("0");
+
+                   }
+                }
+
+
+
+            }
+        });
+        leftBrackets.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleLeftParenthesis();
+            }
+        });
+        rightBrackets.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleRightParenthesis();
+            }
+        });
     }
     private void updateWord(Calculator.TypeWord typeWord) {
         String currentText = displayResult.getText();
@@ -400,11 +637,7 @@ public class JavaCalculator {
                 displayResult.setText(result);
 
             }else{
-
                 displayResult.setText(binaryFormatter.updateFromDisplay(currentText, baseWord,currentBaseWord));
-
-
-
             }
 
         } else {
@@ -413,6 +646,156 @@ public class JavaCalculator {
         }
 
         currentTypeWord = typeWord;
+    }
+
+    private void handleLeftParenthesis() {
+        if (!operator.isEmpty()) {
+            operators.push(operator);
+            numbers.push(total1);
+            operator = "";
+        }
+        parenthesesCount++;
+        isInParentheses = true;
+        isOperatorPressed = true;
+        total1 = BigInteger.ZERO; // Reset total1 for calculations inside parentheses
+
+        // Reset display for new input inside parentheses
+        displayResult.setText("0");
+        displayResult.setForeground(java.awt.Color.GRAY);
+    }
+
+    private void handleRightParenthesis() {
+        if (parenthesesCount > 0) {
+            if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                // Jeśli jest aktywny operator wewnątrz nawiasu, wykonaj ostatnią operację
+                if (!operator.isEmpty()) {
+                    BigInteger currentValue = new BigInteger(
+                            calculator.convertNumber(
+                                    displayResult.getText(),
+                                    currentTypeNumber,
+                                    Calculator.TypeNumber.Dec,
+                                    currentTypeWord
+                            )
+                    );
+
+                    switch (operator) {
+                        case "+":
+                            total1 = calculator.add(total1, currentValue);
+                            break;
+                        case "-":
+                            total1 = calculator.subtract(total1, currentValue);
+                            break;
+                        case "*":
+                            total1 = calculator.multiply(total1, currentValue);
+                            break;
+                        case "/":
+                            if (!currentValue.equals(BigInteger.ZERO)) {
+                                total1 = calculator.divide(total1, currentValue);
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Nie można dzielić przez zero!");
+                                return;
+                            }
+                            break;
+                        case "mod":
+                            total1 = calculator.mod(total1, currentValue);
+                            break;
+                        case "and":
+                            total1 = calculator.bitAnd(total1, currentValue);
+                            break;
+                        case "or":
+                            total1 = calculator.bitOr(total1, currentValue);
+                            break;
+                        case "xor":
+                            total1 = calculator.bitXor(total1, currentValue);
+                            break;
+                        case "lsh":
+                            total1 = calculator.shiftLeft(total1, currentValue);
+                            break;
+                        case "rsh":
+                            total1 = calculator.shiftRight(total1, currentValue);
+                            break;
+                    }
+                    operator = "";
+                } else {
+                    // Jeśli nie ma operatora, weź aktualną wartość
+                    total1 = new BigInteger(
+                            calculator.convertNumber(
+                                    displayResult.getText(),
+                                    currentTypeNumber,
+                                    Calculator.TypeNumber.Dec,
+                                    currentTypeWord
+                            )
+                    );
+                }
+
+                // Teraz wykonaj operację ze stosu (jeśli istnieje)
+                if (!operators.isEmpty()) {
+                    String stackOperator = operators.pop();
+                    BigInteger stackNumber = numbers.pop();
+                    BigInteger result;
+
+                    switch (stackOperator) {
+                        case "+":
+                            result = calculator.add(stackNumber, total1);
+                            break;
+                        case "-":
+                            result = calculator.subtract(stackNumber, total1);
+                            break;
+                        case "*":
+                            result = calculator.multiply(stackNumber, total1);
+                            break;
+                        case "/":
+                            if (!total1.equals(BigInteger.ZERO)) {
+                                result = calculator.divide(stackNumber, total1);
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Nie można dzielić przez zero!");
+                                return;
+                            }
+                            break;
+                        case "mod":
+                            result = calculator.mod(stackNumber, total1);
+                            break;
+                        case "and":
+                            result = calculator.bitAnd(stackNumber, total1);
+                            break;
+                        case "or":
+                            result = calculator.bitOr(stackNumber, total1);
+                            break;
+                        case "xor":
+                            result = calculator.bitXor(stackNumber, total1);
+                            break;
+                        case "lsh":
+                            result = calculator.shiftLeft(stackNumber, total1);
+                            break;
+                        case "rsh":
+                            result = calculator.shiftRight(stackNumber, total1);
+                            break;
+                        default:
+                            result = total1;
+                    }
+                    total1 = result;
+                }
+
+                // Wyświetl wynik
+                displayResult.setText(calculator.convertNumber(
+                        total1.toString(),
+                        Calculator.TypeNumber.Dec,
+                        currentTypeNumber,
+                        currentTypeWord
+                ));
+                displayResult.setForeground(java.awt.Color.BLACK);
+
+                // Aktualizuj wyświetlacz binarny
+                binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
+                lastNumber = total1;
+            }
+
+            parenthesesCount--;
+            if (parenthesesCount == 0) {
+                isInParentheses = false;
+            }
+            isOperatorPressed = true;
+        }
     }
 
     private void updateBase(Calculator.TypeNumber typeNumber) {
@@ -519,6 +902,9 @@ public class JavaCalculator {
         Color enabledColor = Color.BLACK;
         a0Button.setForeground(enabledColor);
         a1Button.setForeground(enabledColor);
+
+
+
     }
 
     private void enableButtonsForOctal() {
@@ -598,10 +984,24 @@ public class JavaCalculator {
         a1XButton.setEnabled(false);
         blankButton.setEnabled(false);
 
+        aButton.setEnabled(false);
+        bButton.setEnabled(false);
+        cButton.setEnabled(false);
+        dButton.setEnabled(false);
+        eButton.setEnabled(false);
+        fButton.setEnabled(false);
+
         sqrtButton.setForeground(Color.GRAY);
         procentButton.setForeground(Color.GRAY);
         a1XButton.setForeground(Color.GRAY);
         blankButton.setForeground(Color.GRAY);
+
+        aButton.setForeground(Color.GRAY);
+        bButton.setForeground(Color.GRAY);
+        cButton.setForeground(Color.GRAY);
+        dButton.setForeground(Color.GRAY);
+        eButton.setForeground(Color.GRAY);
+        fButton.setForeground(Color.GRAY);
     }
 
 
