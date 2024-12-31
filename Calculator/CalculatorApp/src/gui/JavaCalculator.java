@@ -18,10 +18,14 @@ public class JavaCalculator {
     private int parenthesesCount = 0;
     private boolean isInParentheses = false;
 
+    public boolean isInParentheses() {
+        return isInParentheses;
+    }
+
     private BigInteger memoryValue = BigInteger.ZERO;
 
-    private BigInteger total1 = BigInteger.ZERO;
-    private String operator = "";
+    public BigInteger total1 = BigInteger.ZERO;
+    public String operator = "";
     private boolean isNewLine = false;
     private boolean isOperatorPressed = false;
     private String placeHolder = "0";
@@ -41,6 +45,26 @@ public class JavaCalculator {
     private JButton roRButton;
     private JButton rightBrackets;
     private JButton modButton;
+
+
+    public String toStringBlankButton() {
+        return blankButton.getText();
+
+    }
+
+    public void setDisplayResult(String dis) {
+        displayResult.setText(dis);
+    }
+
+    public JTextField getDisplayResult() {
+        return displayResult;
+    }
+
+    public String toStringDisplay() {
+        return displayResult.getText();
+
+    }
+
     private JButton blankButton;
     private JButton leftBrackets;
     private JButton roLButton;
@@ -148,7 +172,7 @@ public class JavaCalculator {
         rówwnaSieButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty() && !isInParentheses) {
+                if ((!operator.isEmpty() && !isPlaceholderActive() && !displayResult.getText().isEmpty()) || !lastOperator.isEmpty() ) {
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     BigInteger result = BigInteger.ZERO;
 
@@ -264,7 +288,7 @@ public class JavaCalculator {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                if (!isPlaceholderActive() && !displayResult.getText().isEmpty() && !isInParentheses) {
+                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     if (!isOperatorPressed) {
                         if (operator.isEmpty()) {
@@ -328,6 +352,7 @@ public class JavaCalculator {
                 lastOperator = "";
                 operator ="";
                 binaryFormatter.updateDisplay(BigInteger.ZERO, calculator.getBaseWord(currentTypeWord));
+                isInParentheses = false;
             }
         });
         roRButton.addActionListener(new ActionListener() {
@@ -606,6 +631,7 @@ public class JavaCalculator {
             }
         });
         leftBrackets.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleLeftParenthesis();
@@ -648,13 +674,16 @@ public class JavaCalculator {
         currentTypeWord = typeWord;
     }
 
-    private void handleLeftParenthesis() {
+    public void handleLeftParenthesis() {
         if (!operator.isEmpty()) {
             operators.push(operator);
             numbers.push(total1);
             operator = "";
         }
         parenthesesCount++;
+
+        blankButton.setText("( "+parenthesesCount);
+
         isInParentheses = true;
         isOperatorPressed = true;
         total1 = BigInteger.ZERO; // Reset total1 for calculations inside parentheses
@@ -664,7 +693,7 @@ public class JavaCalculator {
         displayResult.setForeground(java.awt.Color.GRAY);
     }
 
-    private void handleRightParenthesis() {
+    public void handleRightParenthesis() {
         if (parenthesesCount > 0) {
             if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
                 // Jeśli jest aktywny operator wewnątrz nawiasu, wykonaj ostatnią operację
@@ -772,8 +801,11 @@ public class JavaCalculator {
                             break;
                         default:
                             result = total1;
+
                     }
+                    lastOperator = stackOperator;
                     total1 = result;
+                    lastNumber = stackNumber;
                 }
 
                 // Wyświetl wynik
@@ -787,14 +819,16 @@ public class JavaCalculator {
 
                 // Aktualizuj wyświetlacz binarny
                 binaryFormatter.updateDisplay(total1, calculator.getBaseWord(currentTypeWord));
-                lastNumber = total1;
+
             }
 
             parenthesesCount--;
+            blankButton.setText("( "+ parenthesesCount);
             if (parenthesesCount == 0) {
                 isInParentheses = false;
+                blankButton.setText("");
             }
-            isOperatorPressed = true;
+            isOperatorPressed = false;
         }
     }
 

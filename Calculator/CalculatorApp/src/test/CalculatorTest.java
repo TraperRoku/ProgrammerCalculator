@@ -1,235 +1,292 @@
-/*
 package test;
 
+import gui.BinaryResultFormatter;
+import gui.JavaCalculator;
+import main.Calculator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import javax.swing.*;
+import java.awt.*;
+import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class CalculatorTest {
+    private Calculator calc;
+    private JavaCalculator calculator;
+    private BinaryResultFormatter binaryFormatter;
+    private JTextField binaryResult;
 
-    private final Calculator calculator = new Calculator(0);
-
-
-    // Dodawanie Odejmowanie Mnozenie Dzielenie
-    @org.junit.jupiter.api.Test
-    void add() {
-        assertEquals(5, calculator.add(2, 3));
-        assertEquals(-1, calculator.add(2, -3));
-    }
-
-    @org.junit.jupiter.api.Test
-    void subtract() {
-        assertEquals(-1, calculator.subtract(2, 3));
-        assertEquals(5, calculator.subtract(2, -3));
-    }
-
-    @org.junit.jupiter.api.Test
-    void multiply() {
-        assertEquals(6, calculator.multiply(2, 3));
-        assertEquals(-6, calculator.multiply(2, -3));
-    }
-
-    @org.junit.jupiter.api.Test
-    void divide() {
-        assertEquals( 2, calculator.divide(6, 3));
-        assertEquals(2, calculator.divide(4, 2));
-    }
+    @BeforeEach
+    void setUp() {
+        calc = new Calculator(0);
 
 
 
-    // przesuniecia bitowe
-
-    @org.junit.jupiter.api.Test
-    void bitAnd() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void bitOr() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void bitXor() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void bitNot() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void shiftLeft() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void shiftRight() {
-    }
+        binaryResult = new JTextField();
+        binaryFormatter = new BinaryResultFormatter(binaryResult);
+        calculator = new JavaCalculator();
 
 
 
 
-    @Test
-    void testWordType(){
-        assertEquals("Qword",Calculator.TypeWord.Qword.name());
-        assertEquals("Dword",Calculator.TypeWord.Dword.name());
-        assertEquals("Word",Calculator.TypeWord.Word.name());
-        assertEquals("Bajt",Calculator.TypeWord.Bajt.name());
-
-        assertEquals(4, Calculator.TypeNumber.values().length);
-    }
-
-
-    @Test
-    void rotateLeft() {
-        // Rotate left for Bajt (8 bits)
-
-        // 8-bit tests
-        assertEquals(0b01101101, calculator.rotateLeft(1, Calculator.TypeWord.Bajt, 0b10110110));
-
-// 16-bit tests
-        assertEquals(0x4000, calculator.rotateLeft(14, Calculator.TypeWord.Word, 0x0001));
-
-// 32-bit tests
-        assertEquals(0x80000000, calculator.rotateLeft(31, Calculator.TypeWord.Dword, 0x00000001));
-        assertEquals(0x00000004, calculator.rotateLeft(2, Calculator.TypeWord.Dword, 0x00000001));
-
-// 64-bit tests (note: limited by int return type)
-        assertEquals(0x00000002, calculator.rotateLeft(1, Calculator.TypeWord.Qword, 0x00000001));
-    }
-
-   */
-/* @Test
-    void rotateRight() {
-        // Rotate right for Bajt (8 bits)
-       assertEquals(0b01011011, calculator.rotateRight(1, Calculator.TypeWord.Bajt, 0b10110110));
-        assertEquals(0b10101101, calculator.rotateRight(2, Calculator.TypeWord.Bajt, 0b10110110));
-        assertEquals(0b11010110, calculator.rotateRight(3, Calculator.TypeWord.Bajt, 0b10110110));
-        assertEquals(0b10110110, calculator.rotateRight(8, Calculator.TypeWord.Bajt, 0b10110110)); // Full rotation
-
-        // Rotate right for Dword (32 bits)
-        assertEquals(0x40000000, calculator.rotateRight(2, Calculator.TypeWord.Dword, 0x00000001));
-        assertEquals(0x00000001, calculator.rotateRight(32, Calculator.TypeWord.Dword, 0x00000001)); // Full rotation
-    }
-
-
-
-
-
-    // Konwersja typów na inne typy
-
-    //Test typow z ograniczeniami bitowymi
-    @Test
-    void testNumberType(){
-        assertEquals("Hex", Calculator.TypeNumber.Hex.name());
-        assertEquals("Dec", Calculator.TypeNumber.Dec.name());
-        assertEquals("Bin", Calculator.TypeNumber.Bin.name());
-        assertEquals("Oct", Calculator.TypeNumber.Oct.name());
-
-        assertEquals(4, Calculator.TypeWord.values().length);
-    }*//*
-
-
-    @Test
-    void testTypeNumberConversion() {
-        int decimalValue = 255;
-
-        assertEquals("FF", Integer.toHexString(decimalValue).toUpperCase());
-        assertEquals("377", Integer.toOctalString(decimalValue));
-        assertEquals("11111111", Integer.toBinaryString(decimalValue));
-        assertEquals("255", Integer.toString(decimalValue));
     }
 
     @Test
-    void testTypeWordLimits() {
+    void testBasicParentheses() {
+        // Test opening parenthesis
+        calculator.handleLeftParenthesis();
+        assertEquals("( 1",calculator.toStringBlankButton());
+        assertTrue(calculator.isInParentheses());
+        assertEquals("0", calculator.toStringDisplay());
+        assertEquals(Color.GRAY, calculator.getDisplayResult().getForeground());
 
-        assertEquals(64, getBitSize(Calculator.TypeWord.Qword));
-        assertEquals(32, getBitSize(Calculator.TypeWord.Dword));
-        assertEquals(16, getBitSize(Calculator.TypeWord.Word));
-        assertEquals(8, getBitSize(Calculator.TypeWord.Bajt));
-    }
-
-
-    private int getBitSize(Calculator.TypeWord wordType) {
-        switch (wordType) {
-            case Qword: return 64;
-            case Dword: return 32;
-            case Word:  return 16;
-            case Bajt:  return 8;
-            default: throw new IllegalArgumentException("Nieznany typ!");
-        }
-    }
-
-
-
-*/
-/*    @Test
-    void testConvertHexToDec() {
-        String result = calculator.convertNumber("A", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Dec);
-        assertEquals("10", result);
+        // Test closing parenthesis
+        calculator.handleRightParenthesis();
+        assertEquals("", calculator.toStringBlankButton());
+        assertFalse(calculator.isInParentheses());
     }
 
     @Test
-    void testConvertBinToDec() {
-        String result = calculator.convertNumber("1010", Calculator.TypeNumber.Bin, Calculator.TypeNumber.Dec);
-        assertEquals("10", result);
+    void testNestedParentheses() {
+        // First level
+        calculator.handleLeftParenthesis();
+        assertEquals("( 1", calculator.toStringBlankButton());
+
+        // Second level
+        calculator.handleLeftParenthesis();
+        assertEquals("( 2", calculator.toStringBlankButton()
+        );
+
+        // Close inner parenthesis
+        calculator.handleRightParenthesis();
+        assertEquals("( 1", calculator.toStringBlankButton());
+
+        // Close outer parenthesis
+        calculator.handleRightParenthesis();
+        assertEquals("", calculator.toStringBlankButton());
     }
 
     @Test
-    void testConvertOctToDec() {
-        String result = calculator.convertNumber("12", Calculator.TypeNumber.Oct, Calculator.TypeNumber.Dec);
-        assertEquals("10", result);
+    void testParenthesesWithAddition() {
+        calculator.handleLeftParenthesis();
+        calculator.total1 = BigInteger.valueOf(5);
+        calculator.operator = "+";
+        calculator.setDisplayResult("3");
+        calculator.handleRightParenthesis();
+
+        assertEquals("8", calculator.getDisplayResult().getText());
+        assertEquals(Color.BLACK, calculator.getDisplayResult().getForeground());
     }
 
     @Test
-    void testConvertDecToHex() {
-        String result = calculator.convertNumber("10", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Hex);
-        assertEquals("A", result);
+    void testParenthesesWithMultiplication() {
+        calculator.handleLeftParenthesis();
+        calculator.total1 = BigInteger.valueOf(5);
+        calculator.operator = "*";
+        calculator.setDisplayResult("3");
+        calculator.handleRightParenthesis();
+
+        assertEquals("15", calculator.getDisplayResult().getText());
     }
 
     @Test
-    void testConvertOctToHex() {
-        String result = calculator.convertNumber("12", Calculator.TypeNumber.Oct, Calculator.TypeNumber.Hex);
-        assertEquals("A", result);
+    void testParenthesesWithBitwiseOperations() {
+        // Test AND operation
+        calculator.handleLeftParenthesis();
+        calculator.total1 = BigInteger.valueOf(12); // 1100 in binary
+        calculator.operator = "and";
+        calculator.setDisplayResult("10"); // 1010 in binary
+        calculator.handleRightParenthesis();
+        assertEquals("8", calculator.getDisplayResult().getText()); // 1000 in binary
+
+        // Test OR operation
+        calculator.handleLeftParenthesis();
+        calculator.total1 = BigInteger.valueOf(12); // 1100 in binary
+        calculator.operator = "or";
+        calculator.setDisplayResult("10"); // 1010 in binary
+        calculator.handleRightParenthesis();
+        assertEquals("14", calculator.getDisplayResult().getText()); // 1110 in binary
+    }
+
+
+    @Test
+    void testComplexNestedExpression() {
+        // Testing (5 + (3 * 2))
+        calculator.handleLeftParenthesis(); // Outer
+        calculator.total1 = BigInteger.valueOf(5);
+        calculator.operator = "+";
+
+        calculator.handleLeftParenthesis(); // Inner
+        calculator.total1 = BigInteger.valueOf(3);
+        calculator.operator = "*";
+        calculator.setDisplayResult("2");
+        calculator.handleRightParenthesis(); // Close inner
+
+        calculator.handleRightParenthesis(); // Close outer
+        assertEquals("11", calculator.getDisplayResult().getText());
     }
 
     @Test
-    void testConvertBinToHex() {
-        String result = calculator.convertNumber("1010", Calculator.TypeNumber.Bin, Calculator.TypeNumber.Hex);
-        assertEquals("A", result);
+    void testParenthesesWithShiftOperations() {
+        // Test left shift
+        calculator.handleLeftParenthesis();
+        calculator.total1 = BigInteger.valueOf(2);
+        calculator.operator = "lsh";
+        calculator.setDisplayResult("1");
+        calculator.handleRightParenthesis();
+        assertEquals("4", calculator.getDisplayResult().getText());
+
+        // Test right shift
+        calculator.handleLeftParenthesis();
+        calculator.total1 = BigInteger.valueOf(8);
+        calculator.operator = "rsh";
+        calculator.setDisplayResult("2");
+        calculator.handleRightParenthesis();
+        assertEquals("2", calculator.getDisplayResult().getText());
     }
 
     @Test
-    void testConvertDecToBin() {
-        String result = calculator.convertNumber("10", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Bin);
-        assertEquals("1010", result);
-    }
-    @Test
-    void testConvertOctToBin() {
-        String result = calculator.convertNumber("12", Calculator.TypeNumber.Oct, Calculator.TypeNumber.Bin);
-        assertEquals("1010", result);
+    void testEmptyParentheses() {
+        calculator.handleLeftParenthesis();
+        calculator.handleRightParenthesis();
+        assertEquals("0", calculator.getDisplayResult().getText());
+        assertEquals("", calculator.toStringBlankButton());
     }
 
+    // Basic Arithmetic Tests
     @Test
-    void testConvertHexToBin() {
-        String result = calculator.convertNumber("A", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Bin);
-        assertEquals("1010", result);
-    }
+    void testArithmeticOperations() {
+        BigInteger a = BigInteger.valueOf(10);
+        BigInteger b = BigInteger.valueOf(5);
 
-    @Test
-    void testConvertDecToOct() {
-        String result = calculator.convertNumber("10", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Oct);
-        assertEquals("12", result);
-    }
+        assertEquals(BigInteger.valueOf(15), calc.add(a, b));
+        assertEquals(BigInteger.valueOf(5), calc.subtract(a, b));
+        assertEquals(BigInteger.valueOf(50), calc.multiply(a, b));
+        assertEquals(BigInteger.valueOf(2), calc.divide(a, b));
 
-    @Test
-    void testConvertHexToOct() {
-        String result = calculator.convertNumber("1010", Calculator.TypeNumber.Bin, Calculator.TypeNumber.Oct);
-        assertEquals("12", result);
+        // Test with negative numbers
+        BigInteger c = BigInteger.valueOf(-10);
+        assertEquals(BigInteger.valueOf(-5), calc.add(c, b));
+        assertEquals(BigInteger.valueOf(-15), calc.subtract(c, b));
+        assertEquals(BigInteger.valueOf(-50), calc.multiply(c, b));
+        assertEquals(BigInteger.valueOf(-2), calc.divide(c, b));
     }
 
     @Test
-    void testConvertBinToOct() {
-        String result = calculator.convertNumber("A", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Oct);
-        assertEquals("12", result);
-    }*//*
+    void testDivisionByZero() {
+        BigInteger a = BigInteger.valueOf(10);
+        BigInteger zero = BigInteger.ZERO;
 
+        assertThrows(IllegalArgumentException.class, () -> calc.divide(a, zero));
+    }
 
-}*/
+    // Bitwise Operation Tests
+    @Test
+    void testBitwiseOperations() {
+        BigInteger a = BigInteger.valueOf(12); // 1100 in binary
+        BigInteger b = BigInteger.valueOf(10); // 1010 in binary
+
+        assertEquals(BigInteger.valueOf(8), calc.bitAnd(a, b));  // 1100 & 1010 = 1000 (8)
+        assertEquals(BigInteger.valueOf(14), calc.bitOr(a, b));  // 1100 | 1010 = 1110 (14)
+        assertEquals(BigInteger.valueOf(6), calc.bitXor(a, b));  // 1100 ^ 1010 = 0110 (6)
+
+        // Test NOT operation (depends on word size)
+        BigInteger notResult = calc.bitNot(a);
+        assertTrue(notResult.compareTo(BigInteger.ZERO) != 0); // Basic check that NOT does something
+    }
+
+    // Shift Operation Tests
+    @Test
+    void testShiftOperations() {
+        BigInteger value = BigInteger.valueOf(8);
+        BigInteger shift = BigInteger.valueOf(2);
+
+        assertEquals(BigInteger.valueOf(32), calc.shiftLeft(value, shift));  // 8 << 2 = 32
+        assertEquals(BigInteger.valueOf(2), calc.shiftRight(value, shift));  // 8 >> 2 = 2
+    }
+
+    // Rotation Tests
+    @Test
+    void testRotateOperations() {
+        BigInteger value = BigInteger.valueOf(6); // 0110 in binary
+
+        // Test rotate left
+        BigInteger rotatedLeft = calc.rotateLeft(Calculator.TypeWord.Bajt, value);
+        // For 8-bit rotation of 0000 0110, expect 0000 1100 (12)
+        assertEquals(BigInteger.valueOf(12), rotatedLeft);
+
+        // Test rotate right
+        BigInteger rotatedRight = calc.rotateRight(Calculator.TypeWord.Bajt, value);
+        // For 8-bit rotation of 0000 0110, expect 0000 0011 (3)
+        assertEquals(BigInteger.valueOf(3), rotatedRight);
+    }
+
+    // Number Type Conversion Tests
+    @Test
+    void testNumberConversion() {
+        // Test decimal to other bases
+        assertEquals("64", calc.convertNumber("100", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Hex, Calculator.TypeWord.Bajt));
+        assertEquals("144", calc.convertNumber("100", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Oct, Calculator.TypeWord.Bajt));
+        assertEquals("1100100", calc.convertNumber("100", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Bin, Calculator.TypeWord.Bajt));
+
+        // Test hexadecimal to other bases
+        assertEquals("-1", calc.convertNumber("FF", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Dec, Calculator.TypeWord.Bajt));
+        assertEquals("377", calc.convertNumber("FF", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Oct, Calculator.TypeWord.Bajt));
+        assertEquals("11111111", calc.convertNumber("FF", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Bin, Calculator.TypeWord.Bajt));
+
+        // Test binary to other bases
+        assertEquals("15", calc.convertNumber("1111", Calculator.TypeNumber.Bin, Calculator.TypeNumber.Dec, Calculator.TypeWord.Bajt));
+        assertEquals("F", calc.convertNumber("1111", Calculator.TypeNumber.Bin, Calculator.TypeNumber.Hex, Calculator.TypeWord.Bajt));
+        assertEquals("17", calc.convertNumber("1111", Calculator.TypeNumber.Bin, Calculator.TypeNumber.Oct, Calculator.TypeWord.Bajt));
+    }
+
+    // Word Type Tests
+    @Test
+    void testWordTypes() {
+        // Test bit sizes for different word types
+        assertEquals(8, calc.getBaseWord(Calculator.TypeWord.Bajt));
+        assertEquals(16, calc.getBaseWord(Calculator.TypeWord.Word));
+        assertEquals(32, calc.getBaseWord(Calculator.TypeWord.Dword));
+        assertEquals(64, calc.getBaseWord(Calculator.TypeWord.Qword));
+    }
+
+    // Base Value Tests
+    @Test
+    void testBaseValues() {
+        assertEquals(16, calc.getBaseValue(Calculator.TypeNumber.Hex));
+        assertEquals(10, calc.getBaseValue(Calculator.TypeNumber.Dec));
+        assertEquals(8, calc.getBaseValue(Calculator.TypeNumber.Oct));
+        assertEquals(2, calc.getBaseValue(Calculator.TypeNumber.Bin));
+    }
+
+    // Modulo Operation Tests
+    @Test
+    void testModulo() {
+        BigInteger a = BigInteger.valueOf(17);
+        BigInteger b = BigInteger.valueOf(5);
+
+        assertEquals(BigInteger.valueOf(2), calc.mod(a, b));  // 17 % 5 = 2
+
+        // Test with negative numbers
+        BigInteger c = BigInteger.valueOf(-17);
+        assertEquals(BigInteger.valueOf(3), calc.mod(c, b));  // -17 % 5 = 3
+    }
+
+    // Test number conversion with different word sizes
+    @Test
+    void testNumberConversionWithDifferentWordSizes() {
+        // Test with Byte (8-bit)
+        assertEquals("7F", calc.convertNumber("127", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Hex, Calculator.TypeWord.Bajt));
+        assertEquals("-128", calc.convertNumber("80", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Dec, Calculator.TypeWord.Bajt));
+
+        // Test with Word (16-bit)
+        assertEquals("7FFF", calc.convertNumber("32767", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Hex, Calculator.TypeWord.Word));
+        assertEquals("-32768", calc.convertNumber("8000", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Dec, Calculator.TypeWord.Word));
+
+        // Test with DWord (32-bit)
+        assertEquals("7FFFFFFF", calc.convertNumber("2147483647", Calculator.TypeNumber.Dec, Calculator.TypeNumber.Hex, Calculator.TypeWord.Dword));
+        assertEquals("-2147483648", calc.convertNumber("80000000", Calculator.TypeNumber.Hex, Calculator.TypeNumber.Dec, Calculator.TypeWord.Dword));
+    }
+}

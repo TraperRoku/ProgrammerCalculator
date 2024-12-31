@@ -34,11 +34,10 @@ public class BinaryResultFormatter {
         BigInteger mask = BigInteger.ONE.shiftLeft(BITS).subtract(BigInteger.ONE);
         value = value.and(mask); // Apply the mask to constrain to BITS
 
-        // Generate the binary string
-        binaryStr = value.toString(2); // Convert BigInteger to binary string
-        binaryStr = String.format("%" + BITS + "s", binaryStr).replace(' ', '0'); // Pad with zeros
 
-        // Add spacing for readability
+        binaryStr = value.toString(2);
+        binaryStr = String.format("%" + BITS + "s", binaryStr).replace(' ', '0');
+
         StringBuilder formatted = new StringBuilder();
         for (int i = 0; i < binaryStr.length(); i++) {
             if (i > 0 && i % BITS_PER_GROUP == 0) {
@@ -49,29 +48,23 @@ public class BinaryResultFormatter {
 
         textField.setText(formatted.toString());
 
-
     }
-
     public String updateFromDisplay(String value, int BITS, int BITSCurrentTypeWord) {
         String cleanBinary = value.replace(" ", ""); // Remove spaces from the input
 
-        // If the input is empty, return a single zero
         if (cleanBinary.isEmpty()) {
             textField.setText("0");
             return "0";
         }
 
-        // Truncate the binary string to the rightmost BITS if it's too long
         if (cleanBinary.length() > BITS) {
             cleanBinary = cleanBinary.substring(cleanBinary.length() - BITS);
         } else {
-            // Pad the binary string to the current word type length (BITSCurrentTypeWord)
             if (cleanBinary.length() < BITSCurrentTypeWord) {
                 cleanBinary = "0".repeat(BITS - cleanBinary.length()) + cleanBinary;
             }
         }
 
-        // Handle sign extension for negative numbers if the most significant bit (MSB) is 1
         char signBit = cleanBinary.charAt(0);
         if (signBit == '1' && cleanBinary.length() < BITS) {
             cleanBinary = "1".repeat(BITS - cleanBinary.length()) + cleanBinary;
@@ -96,10 +89,8 @@ public class BinaryResultFormatter {
             formatted.append(cleanBinary.charAt(i));
         }
 
-        // Update the text field with the formatted binary string
         textField.setText(formatted.toString());
 
-        // Return the clean binary string without spaces
         return cleanBinaryCopy;
     }
 
