@@ -6,6 +6,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.math.BigInteger;
 import java.util.Stack;
 
@@ -31,6 +33,7 @@ public class JavaCalculator {
     private String placeHolder = "0";
     private String lastOperator = "";
     private BigInteger lastNumber = BigInteger.ZERO;
+    private boolean flagToSign = false;
 
 
     private Calculator.TypeNumber currentTypeNumber = Calculator.TypeNumber.Dec;
@@ -118,6 +121,47 @@ public class JavaCalculator {
 
     public JavaCalculator() {
 
+        displayResult.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if(c == KeyEvent.VK_ENTER) {
+                    rówwnaSieButton.doClick();
+                }else {
+                    if (isAllowedCharacter(c)) {
+                        if(!flagToSign){
+                            appendNumber(Character.toString(c));
+                        }else{
+                            switch (Character.toString(c)) {
+                                case "+":
+                                   fieldPlus.doClick();
+                                    break;
+                                case "-":
+                                    fieldMinus.doClick();
+                                    break;
+                                case "/":
+                                    fieldDivide.doClick();
+                                    break;
+                                case "*":
+                                    fieldMultiplication.doClick();
+                                    break;
+
+                                default:
+                            }
+
+                        }
+
+                        flagToSign = false;
+
+                    }
+                }
+
+                e.consume();
+            }
+        });
+
+
+
         ifTrueMS.setEnabled(false);
        turnOffButtons();
 
@@ -168,6 +212,8 @@ public class JavaCalculator {
         dwordRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Dword));
         wordRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Word));
         bajtRadioButton.addActionListener(e -> updateWord(Calculator.TypeWord.Bajt));
+
+
 
         rówwnaSieButton.addActionListener(new ActionListener() {
             @Override
@@ -235,6 +281,7 @@ public class JavaCalculator {
                 }
             }
         });
+
 
         fieldPlus.addActionListener(new ActionListener() {
             @Override
@@ -672,6 +719,36 @@ public class JavaCalculator {
         }
 
         currentTypeWord = typeWord;
+        isNewLine = true;
+        lastNumber = null;
+    }
+
+    private boolean isAllowedCharacter(char c) {
+        // Sprawdź typ systemu liczbowego (binarny, szesnastkowy itp.)
+        switch (currentTypeNumber) {
+            case Bin:
+                flagToSign = isOperator(c);
+                return c == '0' || c == '1'|| isOperator(c);
+
+            case Dec: // Dozwolone cyfry 0-9 i operatory
+                flagToSign = isOperator(c);
+                return Character.isDigit(c) || isOperator(c);
+
+            case Oct: // Dozwolone cyfry 0-7 i operatory
+                flagToSign = isOperator(c);
+                return (c >= '0' && c <= '7') || isOperator(c);
+
+            case Hex: // Dozwolone cyfry 0-9, litery A-F i operatory
+                flagToSign = isOperator(c);
+                return Character.isDigit(c) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || isOperator(c);
+
+            default:
+                return false; // Jeśli typ jest nieznany, nie akceptuj znaków
+        }
+    }
+
+    private boolean isOperator(char c) {
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')' || c == '=';
     }
 
     public void handleLeftParenthesis() {
@@ -860,17 +937,40 @@ public class JavaCalculator {
     }
 
     private void appendNumber(String number) {
+
+        BigInteger maxValue = BigInteger.ONE.shiftLeft(calculator.getBaseWord(currentTypeWord) - 1).subtract(BigInteger.ONE);
+        BigInteger minValue = BigInteger.ONE.shiftLeft(calculator.getBaseWord(currentTypeWord) - 1).negate();
+
+
         if (isPlaceholderActive() || isOperatorPressed || isNewLine) {
+
+            BigInteger currentValue = new BigInteger(number, calculator.getBaseValue(currentTypeNumber));
+            if(currentValue.compareTo(maxValue) > 0 || currentValue.compareTo(minValue) < 0) {
+            return;
+            }
+
             displayResult.setText(number);
             displayResult.setForeground(java.awt.Color.BLACK);
             isOperatorPressed = false;
             isNewLine = false;
-            BigInteger currentValue = new BigInteger(number, calculator.getBaseValue(currentTypeNumber));
+
             binaryFormatter.updateDisplay(currentValue, calculator.getBaseWord(currentTypeWord));
         } else {
+
+
+            String s1 = calculator.convertNumber(displayResult.getText(), currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+            String s2 = calculator.convertNumber(number, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+
+            BigInteger combinedValue = new BigInteger(s1 + s2, calculator.getBaseValue(currentTypeNumber));
+
+            if (combinedValue.compareTo(maxValue) > 0 || combinedValue.compareTo(minValue) < 0) {
+                return;
+            }
             displayResult.setText(displayResult.getText() + number);
-            BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
-            binaryFormatter.updateDisplay(currentValue, calculator.getBaseWord(currentTypeWord));
+            BigInteger cV = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+            binaryFormatter.updateDisplay(cV, calculator.getBaseWord(currentTypeWord));
+
+
         }
         lastNumber = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
     }
@@ -940,6 +1040,7 @@ public class JavaCalculator {
 
 
     }
+
 
     private void enableButtonsForOctal() {
         resetAllButtons();
@@ -1037,6 +1138,8 @@ public class JavaCalculator {
         eButton.setForeground(Color.GRAY);
         fButton.setForeground(Color.GRAY);
     }
+
+
 
 
 
