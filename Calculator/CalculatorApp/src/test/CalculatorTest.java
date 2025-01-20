@@ -16,7 +16,7 @@ class CalculatorTest {
     private Calculator calc;
     private JavaCalculator calculator;
     private BinaryResultFormatter binaryFormatter;
-    private JTextField binaryResult;
+    private JTextPane binaryResult;
 
     @BeforeEach
     void setUp() {
@@ -24,7 +24,7 @@ class CalculatorTest {
 
 
 
-        binaryResult = new JTextField();
+        binaryResult = new JTextPane();
         binaryFormatter = new BinaryResultFormatter(binaryResult);
         calculator = new JavaCalculator();
 

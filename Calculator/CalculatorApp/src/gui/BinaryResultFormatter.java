@@ -3,31 +3,38 @@ package gui;
 import main.Calculator;
 
 import javax.swing.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.math.BigInteger;
 
 public class BinaryResultFormatter {
-    private final JTextField textField;
+    private final JTextPane textField;
 
     private final int BITS_PER_GROUP = 4;
 
-    public BinaryResultFormatter(JTextField textField) {
+    public BinaryResultFormatter(JTextPane textField) {
         this.textField = textField;
         setupTextField();
     }
 
     private void setupTextField() {
-        textField.setFont(new Font("Consolas", Font.PLAIN, 12));
-        textField.setHorizontalAlignment(JTextField.LEFT);
+        textField.setFont(new Font("Consolas", Font.PLAIN, 18));
+
         textField.setEditable(false);
         textField.setBackground(Color.WHITE);
         textField.setBorder(BorderFactory.createCompoundBorder(
                 textField.getBorder(),
                 BorderFactory.createEmptyBorder(2, 2, 2, 2)
         ));
+        StyledDocument doc = textField.getStyledDocument();
+        SimpleAttributeSet alignment = new SimpleAttributeSet();
+        StyleConstants.setAlignment(alignment, StyleConstants.ALIGN_RIGHT);
+        doc.setParagraphAttributes(0, doc.getLength(), alignment, false);
     }
 
-    public void updateDisplay(BigInteger value, int BITS) { // Accept BigInteger instead of int or long
+    public void updateDisplay(BigInteger value, int BITS) {
         String binaryStr;
 
         // Constrain the value to the specified bit-width using a mask

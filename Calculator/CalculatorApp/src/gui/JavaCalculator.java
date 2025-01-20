@@ -3,11 +3,12 @@ package gui;
 import main.Calculator;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.math.BigInteger;
 import java.util.Stack;
 
@@ -40,7 +41,7 @@ public class JavaCalculator {
     private Calculator.TypeWord currentTypeWord = Calculator.TypeWord.Qword;
 
     private JPanel JavaCalculator;
-    private JTextField binaryResult;
+    private JTextPane binaryResult;
     private BinaryResultFormatter binaryFormatter;
     private JButton andButton;
     private JButton rshButton;
@@ -68,6 +69,8 @@ public class JavaCalculator {
 
     }
 
+
+
     private JButton blankButton;
     private JButton leftBrackets;
     private JButton roLButton;
@@ -91,7 +94,7 @@ public class JavaCalculator {
     private JButton a5Button;
     private JButton a2Button;
     private JButton MCButton;
-    private JButton button32;
+    private JButton cofniecie;
     private JButton a7Button;
     private JButton a4Button;
     private JButton a1Button;
@@ -121,10 +124,44 @@ public class JavaCalculator {
 
     public JavaCalculator() {
 
+        binaryResult.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int pos = binaryResult.viewToModel2D(e.getPoint());
+                StyledDocument doc = binaryResult.getStyledDocument();
+
+                try {
+
+                    String bit = doc.getText(pos, 1);
+
+                    if (bit.equals("0")) {
+                        doc.remove(pos, 1);
+                        doc.insertString(pos, "1", null);
+                    } else if (bit.equals("1")) {
+                        doc.remove(pos, 1);
+                        doc.insertString(pos, "0", null);
+                    }
+                    displayResult.requestFocusInWindow();
+
+
+                    String s = calculator.convertNumber(binaryResult.getText(), Calculator.TypeNumber.Bin, currentTypeNumber, currentTypeWord);
+                    displayResult.setText(s);
+
+
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+
         displayResult.addKeyListener(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
+                if(c == KeyEvent.VK_BACK_SPACE){
+            cofniecie.doClick();
+                }
                 if(c == KeyEvent.VK_ENTER) {
                     rówwnaSieButton.doClick();
                 }else {
@@ -178,7 +215,10 @@ public class JavaCalculator {
         binaryResult.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
         displayResult.setHorizontalAlignment(JTextField.RIGHT);
-        binaryResult.setHorizontalAlignment(JTextField.RIGHT);
+        StyledDocument doc = binaryResult.getStyledDocument();
+        SimpleAttributeSet alignment = new SimpleAttributeSet();
+        StyleConstants.setAlignment(alignment, StyleConstants.ALIGN_RIGHT);
+        doc.setParagraphAttributes(0, doc.getLength(), alignment, false);
 
         displayResult.setFont(new Font("Arial", Font.BOLD, 24));
         displayResult.setPreferredSize(new Dimension(500, 40));
@@ -633,7 +673,8 @@ public class JavaCalculator {
         MPField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                //if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                if(!displayResult.getText().isEmpty()){
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     memoryValue = memoryValue.add(currentValue);
                     placeHolder = String.valueOf(memoryValue);
@@ -644,14 +685,15 @@ public class JavaCalculator {
         MMButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                //if (!isPlaceholderActive() && !displayResult.getText().isEmpty()) {
+                if(!displayResult.getText().isEmpty()){
                     BigInteger currentValue = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
                     memoryValue = memoryValue.subtract(currentValue);
                     placeHolder = String.valueOf(memoryValue);
                 }
             }
         });
-        button32.addActionListener(new ActionListener() {
+        cofniecie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String displayValue = displayResult.getText();
@@ -721,6 +763,7 @@ public class JavaCalculator {
         currentTypeWord = typeWord;
         isNewLine = true;
         lastNumber = null;
+        displayResult.requestFocusInWindow();
     }
 
     private boolean isAllowedCharacter(char c) {
@@ -934,6 +977,7 @@ public class JavaCalculator {
                 enableButtonsForHexadecimal();
                 break;
         }
+        displayResult.requestFocusInWindow();
     }
 
     private void appendNumber(String number) {
