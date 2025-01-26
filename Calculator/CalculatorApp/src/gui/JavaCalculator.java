@@ -143,10 +143,12 @@ public class JavaCalculator {
                     }
                     displayResult.requestFocusInWindow();
 
+                    String text = binaryResult.getText();
 
-                    String s = calculator.convertNumber(binaryResult.getText(), Calculator.TypeNumber.Bin, currentTypeNumber, currentTypeWord);
+                    text = text.replace(" ","");
+
+                    String s = calculator.convertNumber(text, Calculator.TypeNumber.Bin, currentTypeNumber, currentTypeWord);
                     displayResult.setText(s);
-
 
                 } catch (BadLocationException ex) {
                     ex.printStackTrace();

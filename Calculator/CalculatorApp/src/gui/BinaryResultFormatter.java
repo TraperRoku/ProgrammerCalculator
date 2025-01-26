@@ -37,9 +37,8 @@ public class BinaryResultFormatter {
     public void updateDisplay(BigInteger value, int BITS) {
         String binaryStr;
 
-        // Constrain the value to the specified bit-width using a mask
         BigInteger mask = BigInteger.ONE.shiftLeft(BITS).subtract(BigInteger.ONE);
-        value = value.and(mask); // Apply the mask to constrain to BITS
+        value = value.and(mask);
 
 
         binaryStr = value.toString(2);

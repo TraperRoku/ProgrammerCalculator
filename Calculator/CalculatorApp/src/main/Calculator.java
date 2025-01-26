@@ -28,18 +28,14 @@ public class Calculator {
     }
 
     public String convertNumber(String number, TypeNumber fromType, TypeNumber toType, TypeWord currentTypeWord) {
-        // Step 1: Parse the input number based on the 'fromType'
 
         BigInteger bigInteger = switch (fromType) {
             case Hex -> new BigInteger(number, 16);
-            //TODO przy duzych liczbach wyrzuca for example 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1111 1110
-            //TODO mysl podzielic ta liczbe na dwa a potem zlepic jeszcze nie wiem jak wyjdzie w praniu
             case Bin -> new BigInteger(number, 2);
             case Oct ->  new BigInteger(number, 8);
             case Dec -> new BigInteger(number); // Decimal
         };
 
-        // Step 2: Apply the type word constraints and handle two's complement
         int bitWidth = switch (currentTypeWord) {
             case Bajt -> 8;
             case Word -> 16;
@@ -47,39 +43,32 @@ public class Calculator {
             case Qword -> 64;
         };
 
-        BigInteger mask = BigInteger.ONE.shiftLeft(bitWidth).subtract(BigInteger.ONE); // Mask for n bits
-        BigInteger twoComplementBase = BigInteger.ONE.shiftLeft(bitWidth);            // Base for two's complement
-
-        // Handle two's complement for negative values
+        BigInteger mask = BigInteger.ONE.shiftLeft(bitWidth).subtract(BigInteger.ONE);
+        BigInteger twoComplementBase = BigInteger.ONE.shiftLeft(bitWidth);
         if (bigInteger.signum() < 0) {
             bigInteger = bigInteger.add(twoComplementBase);
         }
 
-        // Constrain the number to the given bit width
         bigInteger = bigInteger.and(mask);
 
-        // Step 3: Convert to the target type and return formatted output
         switch (toType) {
             case Hex:
-                return bigInteger.toString(16).toUpperCase(); // Hexadecimal
+                return bigInteger.toString(16).toUpperCase();
             case Bin:
                 return bigInteger.toString(2);
             case Oct:
-                return bigInteger.toString(8);                // Octal
+                return bigInteger.toString(8);
             case Dec:
-                // Return as signed number
                 if (bigInteger.testBit(bitWidth - 1)) {
-                    // Negative number in two's complement
                     return bigInteger.subtract(twoComplementBase).toString();
                 } else {
                     return bigInteger.toString();
                 }
         }
 
-        return null; // Default return
+        return null;
     }
 
-    // Helper method to format binary string into groups of 4 bits
 
 
     public int getBaseWord(TypeWord word) {
@@ -143,7 +132,7 @@ public class Calculator {
         int bitSize = getBaseWord(typeWord);
 
         BigInteger mask = BigInteger.ONE.shiftLeft(bitSize).subtract(BigInteger.ONE);
-        value = value.and(mask); // Constrain to the bit size
+        value = value.and(mask);
 
         return value.shiftLeft(1).or(value.shiftRight(bitSize - 1)).and(mask);
     }
@@ -153,7 +142,7 @@ public class Calculator {
 
 
         BigInteger mask = BigInteger.ONE.shiftLeft(bitSize).subtract(BigInteger.ONE);
-        value = value.and(mask); // Constrain to the bit size
+        value = value.and(mask);
 
         return value.shiftRight(1).or(value.shiftLeft(bitSize - 1)).and(mask);
     }
