@@ -1003,22 +1003,41 @@ public class JavaCalculator {
             binaryFormatter.updateDisplay(currentValue, calculator.getBaseWord(currentTypeWord));
         } else {
 
+            if (currentTypeNumber == Calculator.TypeNumber.Bin) {
+                String text = displayResult.getText();
 
-            String s1 = calculator.convertNumber(displayResult.getText(), currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
-            String s2 = calculator.convertNumber(number, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
 
-            BigInteger combinedValue = new BigInteger(s1 + s2, calculator.getBaseValue(currentTypeNumber));
+                BigInteger combinedValue = new BigInteger(text+number,2);
 
-            if (combinedValue.compareTo(maxValue) > 0 || combinedValue.compareTo(minValue) < 0) {
-                return;
+                if (combinedValue.compareTo(maxValue) > 0 || combinedValue.compareTo(minValue) < 0) {
+                    return;
+                }
+
+                displayResult.setText(text + number);
+
+
+                binaryFormatter.updateFromDisplay(text+number,calculator.getBaseWord(currentTypeWord), calculator.getBaseWord(currentTypeWord));
+
+
+
+            } else {
+                String s1 = calculator.convertNumber(displayResult.getText(), currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+                String s2 = calculator.convertNumber(number, currentTypeNumber, Calculator.TypeNumber.Dec, currentTypeWord);
+
+                BigInteger combinedValue = new BigInteger(s1 + s2, calculator.getBaseValue(currentTypeNumber));
+
+                if (combinedValue.compareTo(maxValue) > 0 || combinedValue.compareTo(minValue) < 0) {
+                    return;
+                }
+                displayResult.setText(displayResult.getText() + number);
+                BigInteger cV = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+                binaryFormatter.updateDisplay(cV, calculator.getBaseWord(currentTypeWord));
+
+
             }
-            displayResult.setText(displayResult.getText() + number);
-            BigInteger cV = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
-            binaryFormatter.updateDisplay(cV, calculator.getBaseWord(currentTypeWord));
-
-
         }
-        lastNumber = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+            lastNumber = new BigInteger(displayResult.getText(), calculator.getBaseValue(currentTypeNumber));
+
     }
 
     private void displayPlaceholder() {
